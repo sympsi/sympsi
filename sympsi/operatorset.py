@@ -16,7 +16,7 @@ TODO List:
 
 from __future__ import print_function, division
 
-from sympsi.cartesian import (XOp, YOp, ZOp, XKet, PxOp, PxKet,
+from sympy.physics.quantum.cartesian import (XOp, YOp, ZOp, XKet, PxOp, PxKet,
                                              PositionKet3D)
 from sympsi.operator import Operator
 from sympsi.state import StateBase, BraBase, Ket

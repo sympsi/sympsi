@@ -6,17 +6,18 @@ from sympy import Expr, Add, Mul, Matrix, Pow, sympify
 from sympy.core.compatibility import u
 from sympy.core.trace import Tr
 from sympy.printing.pretty.stringpict import prettyForm
+from sympy.physics.quantum.matrixutils import (
+    numpy_ndarray,
+    scipy_sparse_matrix,
+    matrix_tensor_product
+)
 
 from sympsi.qexpr import QuantumError
 from sympsi.dagger import Dagger
 from sympsi.commutator import Commutator
 from sympsi.anticommutator import AntiCommutator
 from sympsi.state import Ket, Bra
-from sympsi.matrixutils import (
-    numpy_ndarray,
-    scipy_sparse_matrix,
-    matrix_tensor_product
-)
+
 
 __all__ = [
     'TensorProduct',

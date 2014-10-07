@@ -4,12 +4,12 @@ from sympy import Expr, sympify, Symbol, Matrix
 from sympy.printing.pretty.stringpict import prettyForm
 from sympy.core.containers import Tuple
 from sympy.core.compatibility import is_sequence, string_types, u
-
-from sympsi.dagger import Dagger
-from sympsi.matrixutils import (
+from sympy.physics.quantum.matrixutils import (
     numpy_ndarray, scipy_sparse_matrix,
     to_sympy, to_numpy, to_scipy_sparse
 )
+
+from sympsi.dagger import Dagger
 
 __all__ = [
     'QuantumError',
