@@ -2,7 +2,7 @@
 
 import warnings
 
-from sympy import Add, Mul, Pow, Integer
+from sympy import Add, Mul, Pow, Integer, Integral, Sum
 from sympsi import Operator, Commutator, AntiCommutator
 from sympsi.boson import BosonOp
 from sympsi.fermion import FermionOp
@@ -189,12 +189,18 @@ def _normal_ordered_form_factor(product, independent=False, recursive_limit=10,
                 new_factors.append(factors[n])
 
         else:
-            new_factors.append(factors[n])
+            new_factors.append(normal_ordered_form(factors[n],
+                                                   recursive_limit=recursive_limit,
+                                                   _recursive_depth=_recursive_depth + 1,
+                                                   independent=independent))
 
         n += 1
 
     if n == len(factors) - 1:
-        new_factors.append(factors[-1])
+        new_factors.append(normal_ordered_form(factors[-1],
+                                               recursive_limit=recursive_limit,
+                                               _recursive_depth=_recursive_depth + 1,
+                                               independent=independent))
 
     if new_factors == factors:
         return product
@@ -274,6 +280,16 @@ def normal_ordered_form(expr, independent=False, recursive_limit=10,
     elif isinstance(expr, Expectation):
         return Expectation(normal_ordered_form(expr.expression), 
                            expr.is_normal_order)
+                           
+    elif isinstance(expr, (Sum, Integral)):
+        nargs = [normal_ordered_form(expr.function,
+                                     recursive_limit=recursive_limit,
+                                     _recursive_depth=_recursive_depth,
+                                     independent=independent)]
+        for lim in expr.limits:
+            nargs.append(lim)
+        return type(expr)(*nargs)
+
     else:
         return expr
 
