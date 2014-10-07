@@ -13,8 +13,8 @@ from __future__ import print_function, division
 
 from sympy import Derivative, Expr, Integer, oo, Mul, Symbol, latex, Pow, Add
 from sympy.printing.pretty.stringpict import prettyForm
-from sympy.physics.quantum.dagger import Dagger
-from sympy.physics.quantum.qexpr import QExpr, dispatch_method
+from sympsi.dagger import Dagger
+from sympsi.qexpr import QExpr, dispatch_method
 from sympy.matrices import eye
 
 __all__ = [
@@ -50,7 +50,7 @@ class Operator(QExpr):
 
     Create an operator and examine its attributes::
 
-        >>> from sympy.physics.quantum import Operator
+        >>> from sympsi import Operator
         >>> from sympy import symbols, I
         >>> A = Operator('A')
         >>> A
@@ -190,7 +190,7 @@ class HermitianOperator(Operator):
     Examples
     ========
 
-    >>> from sympy.physics.quantum import Dagger, HermitianOperator
+    >>> from sympsi import Dagger, HermitianOperator
     >>> H = HermitianOperator('H')
     >>> Dagger(H)
     H
@@ -229,7 +229,7 @@ class UnitaryOperator(Operator):
     Examples
     ========
 
-    >>> from sympy.physics.quantum import Dagger, UnitaryOperator
+    >>> from sympsi import Dagger, UnitaryOperator
     >>> U = UnitaryOperator('U')
     >>> U*Dagger(U)
     1
@@ -253,7 +253,7 @@ class IdentityOperator(Operator):
     Examples
     ========
 
-    >>> from sympy.physics.quantum import IdentityOperator
+    >>> from sympsi import IdentityOperator
     >>> IdentityOperator()
     I
     """
@@ -349,8 +349,8 @@ class OuterProduct(Operator):
 
     Create a simple outer product by hand and take its dagger::
 
-        >>> from sympy.physics.quantum import Ket, Bra, OuterProduct, Dagger
-        >>> from sympy.physics.quantum import Operator
+        >>> from sympsi import Ket, Bra, OuterProduct, Dagger
+        >>> from sympsi import Operator
 
         >>> k = Ket('k')
         >>> b = Bra('b')
@@ -393,7 +393,7 @@ class OuterProduct(Operator):
     is_commutative = False
 
     def __new__(cls, *args, **old_assumptions):
-        from sympy.physics.quantum.state import KetBase, BraBase
+        from sympsi.state import KetBase, BraBase
         ket = args[0]
         bra = args[1]
         if not isinstance(ket, KetBase):
@@ -477,9 +477,9 @@ class DifferentialOperator(Operator):
     Wavefunction is to be substituted
 
     >>> from sympy import Derivative, Function, Symbol
-    >>> from sympy.physics.quantum.operator import DifferentialOperator
-    >>> from sympy.physics.quantum.state import Wavefunction
-    >>> from sympy.physics.quantum.qapply import qapply
+    >>> from sympsi.operator import DifferentialOperator
+    >>> from sympsi.state import Wavefunction
+    >>> from sympsi.qapply import qapply
     >>> f = Function('f')
     >>> x = Symbol('x')
     >>> d = DifferentialOperator(1/x*Derivative(f(x), x), f(x))
@@ -502,7 +502,7 @@ class DifferentialOperator(Operator):
         Examples
         ========
 
-        >>> from sympy.physics.quantum.operator import DifferentialOperator
+        >>> from sympsi.operator import DifferentialOperator
         >>> from sympy import Symbol, Function, Derivative
         >>> x = Symbol('x')
         >>> f = Function('f')
@@ -526,7 +526,7 @@ class DifferentialOperator(Operator):
         Examples
         ========
 
-        >>> from sympy.physics.quantum.operator import DifferentialOperator
+        >>> from sympsi.operator import DifferentialOperator
         >>> from sympy import Function, Symbol, Derivative
         >>> x = Symbol('x')
         >>> f = Function('f')
@@ -551,7 +551,7 @@ class DifferentialOperator(Operator):
         Examples
         ========
 
-        >>> from sympy.physics.quantum.operator import DifferentialOperator
+        >>> from sympsi.operator import DifferentialOperator
         >>> from sympy import Function, Symbol, Derivative
         >>> x = Symbol('x')
         >>> f = Function('f')
@@ -576,7 +576,7 @@ class DifferentialOperator(Operator):
         return self.expr.free_symbols
 
     def _apply_operator_Wavefunction(self, func):
-        from sympy.physics.quantum.state import Wavefunction
+        from sympsi.state import Wavefunction
         var = self.variables
         wf_vars = func.args[1:]
 
@@ -686,7 +686,7 @@ class OperatorFunction(Operator):
                 return None
 
     def _eval_commutator_OperatorFunction(self, other, **hints):
-        from sympy.physics.quantum.commutator import Commutator
+        from sympsi.commutator import Commutator
 
         if self.operator.args[0] == other.operator.args[0]:
             if str(self.variable) == str(other.variable):

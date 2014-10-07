@@ -3,11 +3,11 @@
 import warnings
 
 from sympy import Add, Mul, Pow, Integer
-from sympy.physics.quantum import Operator, Commutator, AntiCommutator
-from sympy.physics.quantum.boson import BosonOp
-from sympy.physics.quantum.fermion import FermionOp
-from sympy.physics.quantum.operator import OperatorFunction
-from sympy.physics.quantum.expectation import Expectation
+from sympsi import Operator, Commutator, AntiCommutator
+from sympsi.boson import BosonOp
+from sympsi.fermion import FermionOp
+from sympsi.operator import OperatorFunction
+from sympsi.expectation import Expectation
 
 
 __all__ = [
@@ -248,9 +248,9 @@ def normal_ordered_form(expr, independent=False, recursive_limit=10,
     Examples
     ========
 
-    >>> from sympy.physics.quantum import Dagger
-    >>> from sympy.physics.quantum.boson import BosonOp
-    >>> from sympy.physics.quantum.operatorordering import normal_ordered_form
+    >>> from sympsi import Dagger
+    >>> from sympsi.boson import BosonOp
+    >>> from sympsi.operatorordering import normal_ordered_form
     >>> a = BosonOp("a")
     >>> normal_ordered_form(a * Dagger(a))
     1 + Dagger(a)*a
@@ -392,9 +392,9 @@ def normal_order(expr, recursive_limit=10, _recursive_depth=0):
     Examples
     ========
 
-    >>> from sympy.physics.quantum import Dagger
-    >>> from sympy.physics.quantum.boson import BosonOp
-    >>> from sympy.physics.quantum.operatorordering import normal_order
+    >>> from sympsi import Dagger
+    >>> from sympsi.boson import BosonOp
+    >>> from sympsi.operatorordering import normal_order
     >>> a = BosonOp("a")
     >>> normal_order(a * Dagger(a))
     Dagger(a)*a

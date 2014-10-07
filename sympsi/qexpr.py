@@ -5,8 +5,8 @@ from sympy.printing.pretty.stringpict import prettyForm
 from sympy.core.containers import Tuple
 from sympy.core.compatibility import is_sequence, string_types, u
 
-from sympy.physics.quantum.dagger import Dagger
-from sympy.physics.quantum.matrixutils import (
+from sympsi.dagger import Dagger
+from sympsi.matrixutils import (
     numpy_ndarray, scipy_sparse_matrix,
     to_sympy, to_numpy, to_scipy_sparse
 )
@@ -43,7 +43,7 @@ def _qsympify_sequence(seq):
     Examples
     ========
 
-    >>> from sympy.physics.quantum.qexpr import _qsympify_sequence
+    >>> from sympsi.qexpr import _qsympify_sequence
     >>> _qsympify_sequence((1,2,[3,4,[1,]]))
     (1, 2, (3, 4, (1,)))
 
@@ -114,7 +114,7 @@ class QExpr(Expr):
         Examples
         ========
 
-        >>> from sympy.physics.quantum.qexpr import QExpr
+        >>> from sympsi.qexpr import QExpr
         >>> q = QExpr(0)
         >>> q
         0
@@ -208,7 +208,7 @@ class QExpr(Expr):
     def _eval_hilbert_space(cls, args):
         """Compute the Hilbert space instance from the args.
         """
-        from sympy.physics.quantum.hilbert import HilbertSpace
+        from sympsi.hilbert import HilbertSpace
         return HilbertSpace()
 
     #-------------------------------------------------------------------------

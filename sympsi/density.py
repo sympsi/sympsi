@@ -2,15 +2,16 @@ from __future__ import print_function, division
 
 from itertools import product
 
-from sympy import Tuple, Add, Mul, Matrix, log, expand, sqrt, Rational
+from sympy import Tuple, Add, Mul, Matrix, log, expand, Rational
 from sympy.core.trace import Tr
-from sympy.core.compatibility import u
 from sympy.printing.pretty.stringpict import prettyForm
-from sympy.physics.quantum.dagger import Dagger
-from sympy.physics.quantum.operator import HermitianOperator, OuterProduct, Operator
-from sympy.physics.quantum.represent import represent
-from sympy.physics.quantum.matrixutils import numpy_ndarray, scipy_sparse_matrix, to_numpy
-from sympy.physics.quantum.tensorproduct import TensorProduct, tensor_product_simp
+from sympy.physics.quantum.matrixutils import (numpy_ndarray,
+                                               scipy_sparse_matrix, to_numpy)
+
+from sympsi.dagger import Dagger
+from sympsi.operator import HermitianOperator
+from sympsi.represent import represent
+from sympsi.tensorproduct import TensorProduct, tensor_product_simp
 
 
 class Density(HermitianOperator):
@@ -29,8 +30,8 @@ class Density(HermitianOperator):
 
     Create a density operator with 2 states represented by Kets.
 
-    >>> from sympy.physics.quantum.state import Ket
-    >>> from sympy.physics.quantum.density import Density
+    >>> from sympsi.state import Ket
+    >>> from sympsi.density import Density
     >>> d = Density([Ket(0), 0.5], [Ket(1),0.5])
     >>> d
     'Density'((|0>, 0.5),(|1>, 0.5))
@@ -57,8 +58,8 @@ class Density(HermitianOperator):
         Examples
         =========
 
-        >>> from sympy.physics.quantum.state import Ket
-        >>> from sympy.physics.quantum.density import Density
+        >>> from sympsi.state import Ket
+        >>> from sympsi.density import Density
         >>> d = Density([Ket(0), 0.5], [Ket(1),0.5])
         >>> d.states()
         (|0>, |1>)
@@ -72,8 +73,8 @@ class Density(HermitianOperator):
         Examples
         =========
 
-        >>> from sympy.physics.quantum.state import Ket
-        >>> from sympy.physics.quantum.density import Density
+        >>> from sympsi.state import Ket
+        >>> from sympsi.density import Density
         >>> d = Density([Ket(0), 0.5], [Ket(1),0.5])
         >>> d.probs()
         (0.5, 0.5)
@@ -92,8 +93,8 @@ class Density(HermitianOperator):
         Examples
         =========
 
-        >>> from sympy.physics.quantum.state import Ket
-        >>> from sympy.physics.quantum.density import Density
+        >>> from sympsi.state import Ket
+        >>> from sympsi.density import Density
         >>> d = Density([Ket(0), 0.5], [Ket(1),0.5])
         >>> d.states()[1]
         |1>
@@ -113,8 +114,8 @@ class Density(HermitianOperator):
         Examples
         =========
 
-        >>> from sympy.physics.quantum.state import Ket
-        >>> from sympy.physics.quantum.density import Density
+        >>> from sympsi.state import Ket
+        >>> from sympsi.density import Density
         >>> d = Density([Ket(0), 0.5], [Ket(1),0.5])
         >>> d.probs()[1]
         0.500000000000000
@@ -134,9 +135,9 @@ class Density(HermitianOperator):
         Examples
         =========
 
-        >>> from sympy.physics.quantum.state import Ket
-        >>> from sympy.physics.quantum.density import Density
-        >>> from sympy.physics.quantum.operator import Operator
+        >>> from sympsi.state import Ket
+        >>> from sympsi.density import Density
+        >>> from sympsi.operator import Operator
         >>> A = Operator('A')
         >>> d = Density([Ket(0), 0.5], [Ket(1),0.5])
         >>> d.apply_op(A)
@@ -152,9 +153,9 @@ class Density(HermitianOperator):
         Examples
         =========
 
-        >>> from sympy.physics.quantum.state import Ket
-        >>> from sympy.physics.quantum.density import Density
-        >>> from sympy.physics.quantum.operator import Operator
+        >>> from sympsi.state import Ket
+        >>> from sympsi.density import Density
+        >>> from sympsi.operator import Operator
         >>> A = Operator('A')
         >>> d = Density([Ket(0), 0.5], [Ket(1),0.5])
         >>> d.doit()
@@ -232,10 +233,10 @@ def entropy(density):
     Examples:
     ========
 
-    >>> from sympy.physics.quantum.density import Density, entropy
-    >>> from sympy.physics.quantum.represent import represent
-    >>> from sympy.physics.quantum.matrixutils import scipy_sparse_matrix
-    >>> from sympy.physics.quantum.spin import JzKet, Jz
+    >>> from sympsi.density import Density, entropy
+    >>> from sympsi.represent import represent
+    >>> from sympsi.matrixutils import scipy_sparse_matrix
+    >>> from sympsi.spin import JzKet, Jz
     >>> from sympy import S, log
     >>> up = JzKet(S(1)/2,S(1)/2)
     >>> down = JzKet(S(1)/2,-S(1)/2)
@@ -279,10 +280,10 @@ def fidelity(state1, state2):
     =========
 
     >>> from sympy import S, sqrt
-    >>> from sympy.physics.quantum.dagger import Dagger
-    >>> from sympy.physics.quantum.spin import JzKet
-    >>> from sympy.physics.quantum.density import Density, fidelity
-    >>> from sympy.physics.quantum.represent import represent
+    >>> from sympsi.dagger import Dagger
+    >>> from sympsi.spin import JzKet
+    >>> from sympsi.density import Density, fidelity
+    >>> from sympsi.represent import represent
     >>>
     >>> up = JzKet(S(1)/2,S(1)/2)
     >>> down = JzKet(S(1)/2,-S(1)/2)

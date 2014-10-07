@@ -6,8 +6,8 @@ from sympy import S, Expr, Mul, Integer
 from sympy.core.compatibility import u
 from sympy.printing.pretty.stringpict import prettyForm
 
-from sympy.physics.quantum.operator import Operator
-from sympy.physics.quantum.dagger import Dagger
+from sympsi.operator import Operator
+from sympsi.dagger import Dagger
 
 __all__ = [
     'AntiCommutator'
@@ -41,8 +41,8 @@ class AntiCommutator(Expr):
     ========
 
     >>> from sympy import symbols
-    >>> from sympy.physics.quantum import AntiCommutator
-    >>> from sympy.physics.quantum import Operator, Dagger
+    >>> from sympsi import AntiCommutator
+    >>> from sympsi import Operator, Dagger
     >>> x, y = symbols('x,y')
     >>> A = Operator('A')
     >>> B = Operator('B')

@@ -27,9 +27,9 @@ class Dagger(adjoint):
 
     Daggering various quantum objects:
 
-        >>> from sympy.physics.quantum.dagger import Dagger
-        >>> from sympy.physics.quantum.state import Ket, Bra
-        >>> from sympy.physics.quantum.operator import Operator
+        >>> from sympsi.dagger import Dagger
+        >>> from sympsi.state import Ket, Bra
+        >>> from sympsi.operator import Operator
         >>> Dagger(Ket('psi'))
         <psi|
         >>> Dagger(Bra('phi'))
@@ -39,7 +39,7 @@ class Dagger(adjoint):
 
     Inner and outer products::
 
-        >>> from sympy.physics.quantum import InnerProduct, OuterProduct
+        >>> from sympsi import InnerProduct, OuterProduct
         >>> Dagger(InnerProduct(Bra('a'), Ket('b')))
         <b|a>
         >>> Dagger(OuterProduct(Ket('a'), Bra('b')))

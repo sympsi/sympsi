@@ -46,7 +46,7 @@ class Wigner3j(Expr):
 
     Declare a Wigner-3j coefficient and calcualte its value
 
-        >>> from sympy.physics.quantum.cg import Wigner3j
+        >>> from sympsi.cg import Wigner3j
         >>> w3j = Wigner3j(6,0,4,0,2,0)
         >>> w3j
         Wigner3j(6, 0, 4, 0, 2, 0)
@@ -169,7 +169,7 @@ class CG(Wigner3j):
 
     Define a Clebsch-Gordan coefficient and evaluate its value
 
-        >>> from sympy.physics.quantum.cg import CG
+        >>> from sympsi.cg import CG
         >>> from sympy import S
         >>> cg = CG(S(3)/2, S(3)/2, S(1)/2, -S(1)/2, 1, 1)
         >>> cg
@@ -423,7 +423,7 @@ def cg_simp(e):
     Simplify the sum over CG(a,alpha,0,0,a,alpha) for all alpha to
     2*a+1
 
-        >>> from sympy.physics.quantum.cg import CG, cg_simp
+        >>> from sympsi.cg import CG, cg_simp
         >>> a = CG(1,1,0,0,1,1)
         >>> b = CG(1,0,0,0,1,0)
         >>> c = CG(1,-1,0,0,1,-1)

@@ -11,16 +11,16 @@ from sympy.matrices import zeros
 from sympy.printing.pretty.stringpict import prettyForm, stringPict
 from sympy.printing.pretty.pretty_symbology import pretty_symbol
 
-from sympy.physics.quantum.qexpr import QExpr
-from sympy.physics.quantum.operator import (HermitianOperator, Operator,
+from sympsi.qexpr import QExpr
+from sympsi.operator import (HermitianOperator, Operator,
                                             UnitaryOperator)
-from sympy.physics.quantum.state import Bra, Ket, State
+from sympsi.state import Bra, Ket, State
 from sympy.functions.special.tensor_functions import KroneckerDelta
-from sympy.physics.quantum.constants import hbar
-from sympy.physics.quantum.hilbert import ComplexSpace, DirectSumHilbertSpace
-from sympy.physics.quantum.tensorproduct import TensorProduct
-from sympy.physics.quantum.cg import CG
-from sympy.physics.quantum.qapply import qapply
+from sympsi.constants import hbar
+from sympsi.hilbert import ComplexSpace, DirectSumHilbertSpace
+from sympsi.tensorproduct import TensorProduct
+from sympsi.cg import CG
+from sympsi.qapply import qapply
 
 
 __all__ = [
@@ -446,7 +446,7 @@ class Rotation(UnitaryOperator):
     A simple example rotation operator:
 
         >>> from sympy import pi
-        >>> from sympy.physics.quantum.spin import Rotation
+        >>> from sympsi.spin import Rotation
         >>> Rotation(pi, 0, pi/2)
         R(pi,0,pi/2)
 
@@ -540,7 +540,7 @@ class Rotation(UnitaryOperator):
         Return the Wigner-D matrix element for a defined rotation, both
         numerical and symbolic:
 
-            >>> from sympy.physics.quantum.spin import Rotation
+            >>> from sympsi.spin import Rotation
             >>> from sympy import pi, symbols
             >>> alpha, beta, gamma = symbols('alpha beta gamma')
             >>> Rotation.D(1, 1, 0,pi, pi/2,-pi)
@@ -580,7 +580,7 @@ class Rotation(UnitaryOperator):
         Return the Wigner-D matrix element for a defined rotation, both
         numerical and symbolic:
 
-            >>> from sympy.physics.quantum.spin import Rotation
+            >>> from sympsi.spin import Rotation
             >>> from sympy import pi, symbols
             >>> beta = symbols('beta')
             >>> Rotation.d(1, 1, 0, pi/2)
@@ -740,7 +740,7 @@ class WignerD(Expr):
 
     Evaluate the Wigner-D matrix elements of a simple rotation:
 
-        >>> from sympy.physics.quantum.spin import Rotation
+        >>> from sympsi.spin import Rotation
         >>> from sympy import pi
         >>> rot = Rotation.D(1, 1, 0, pi, pi/2, 0)
         >>> rot
@@ -978,7 +978,7 @@ class SpinState(State):
         return self._rewrite_basis(Jz, JzKet, **options)
 
     def _rewrite_basis(self, basis, evect, **options):
-        from sympy.physics.quantum.represent import represent
+        from sympsi.represent import represent
         j = self.j
         args = self.args[2:]
         if j.is_number:
@@ -1194,7 +1194,7 @@ class JzKet(SpinState, Ket):
 
     Defining simple spin states, both numerical and symbolic:
 
-        >>> from sympy.physics.quantum.spin import JzKet, JxKet
+        >>> from sympsi.spin import JzKet, JxKet
         >>> from sympy import symbols
         >>> JzKet(1, 0)
         |1,0>
@@ -1211,8 +1211,8 @@ class JzKet(SpinState, Ket):
     Get the vector representation of a state in terms of the basis elements
     of the Jx operator:
 
-        >>> from sympy.physics.quantum.represent import represent
-        >>> from sympy.physics.quantum.spin import Jx, Jz
+        >>> from sympsi.represent import represent
+        >>> from sympsi.spin import Jx, Jz
         >>> represent(JzKet(1,-1), basis=Jx)
         Matrix([
         [      1/2],
@@ -1221,8 +1221,8 @@ class JzKet(SpinState, Ket):
 
     Apply innerproducts between states:
 
-        >>> from sympy.physics.quantum.innerproduct import InnerProduct
-        >>> from sympy.physics.quantum.spin import JxBra
+        >>> from sympsi.innerproduct import InnerProduct
+        >>> from sympsi.spin import JxBra
         >>> i = InnerProduct(JxBra(1,1), JzKet(1,1))
         >>> i
         <1,1|1,1>
@@ -1233,7 +1233,7 @@ class JzKet(SpinState, Ket):
 
     Define an uncoupled state as a TensorProduct between two Jz eigenkets:
 
-        >>> from sympy.physics.quantum.tensorproduct import TensorProduct
+        >>> from sympsi.tensorproduct import TensorProduct
         >>> j1,m1,j2,m2 = symbols('j1 m1 j2 m2')
         >>> TensorProduct(JzKet(1,0), JzKet(1,1))
         |1,0>x|1,1>
@@ -1685,7 +1685,7 @@ class JzKetCoupled(CoupledSpinState, Ket):
 
     Defining simple spin states, both numerical and symbolic:
 
-        >>> from sympy.physics.quantum.spin import JzKetCoupled
+        >>> from sympsi.spin import JzKetCoupled
         >>> from sympy import symbols
         >>> JzKetCoupled(1, 0, (1, 1))
         |1,0,j1=1,j2=1>
@@ -1718,8 +1718,8 @@ class JzKetCoupled(CoupledSpinState, Ket):
     Get the vector representation of a state in terms of the basis elements
     of the Jx operator:
 
-        >>> from sympy.physics.quantum.represent import represent
-        >>> from sympy.physics.quantum.spin import Jx
+        >>> from sympsi.represent import represent
+        >>> from sympsi.spin import Jx
         >>> from sympy import S
         >>> represent(JzKetCoupled(1,-1,(S(1)/2,S(1)/2)), basis=Jx)
         Matrix([
@@ -1815,8 +1815,8 @@ def couple(expr, jcoupling_list=None):
 
     Couple a tensor product of numerical states for two spaces:
 
-        >>> from sympy.physics.quantum.spin import JzKet, couple
-        >>> from sympy.physics.quantum.tensorproduct import TensorProduct
+        >>> from sympsi.spin import JzKet, couple
+        >>> from sympsi.tensorproduct import TensorProduct
         >>> couple(TensorProduct(JzKet(1,0), JzKet(1,1)))
         -sqrt(2)*|1,1,j1=1,j2=1>/2 + sqrt(2)*|2,1,j1=1,j2=1>/2
 
@@ -2000,14 +2000,14 @@ def uncouple(expr, jn=None, jcoupling_list=None):
 
     Uncouple a numerical state using a CoupledSpinState state:
 
-        >>> from sympy.physics.quantum.spin import JzKetCoupled, uncouple
+        >>> from sympsi.spin import JzKetCoupled, uncouple
         >>> from sympy import S
         >>> uncouple(JzKetCoupled(1, 0, (S(1)/2, S(1)/2)))
         sqrt(2)*|1/2,-1/2>x|1/2,1/2>/2 + sqrt(2)*|1/2,1/2>x|1/2,-1/2>/2
 
     Perform the same calculation using a SpinState state:
 
-        >>> from sympy.physics.quantum.spin import JzKet
+        >>> from sympsi.spin import JzKet
         >>> uncouple(JzKet(1, 0), (S(1)/2, S(1)/2))
         sqrt(2)*|1/2,-1/2>x|1/2,1/2>/2 + sqrt(2)*|1/2,1/2>x|1/2,-1/2>/2
 

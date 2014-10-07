@@ -2,8 +2,8 @@
 
 from sympy.core.compatibility import u
 from sympy import Mul, Integer, exp, sqrt, conjugate, DiracDelta, Symbol
-from sympy.physics.quantum import Operator, Commutator
-from sympy.physics.quantum import HilbertSpace, FockSpace, Ket, Bra, IdentityOperator
+from sympsi import Operator, Commutator
+from sympsi import HilbertSpace, FockSpace, Ket, Bra, IdentityOperator
 from sympy.functions.special.tensor_functions import KroneckerDelta
 
 
@@ -37,8 +37,8 @@ class BosonOp(Operator):
     Examples
     ========
 
-    >>> from sympy.physics.quantum import Dagger, Commutator
-    >>> from sympy.physics.quantum.boson import BosonOp
+    >>> from sympsi import Dagger, Commutator
+    >>> from sympsi.boson import BosonOp
     >>> a = BosonOp("a")
     >>> Commutator(a, Dagger(a)).doit()
     1
@@ -167,8 +167,8 @@ class MultiBosonOp(BosonOp):
     Examples
     ========
     
-    >>> from sympy.physics.quantum import Dagger, Commutator
-    >>> from sympy.physics.quantum.boson import MultiBosonOp
+    >>> from sympsi import Dagger, Commutator
+    >>> from sympsi.boson import MultiBosonOp
     >>> w1, w2 = symbols("w1, w2")
     >>> a1 = MultiBosonOp("a", w1, 'discrete')
     >>> a2 = MultiBosonOp("a", w2, 'discrete')

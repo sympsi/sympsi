@@ -4,10 +4,10 @@ from warnings import warn
 
 from sympy.core.compatibility import u
 from sympy import Add, Mul, Pow, Integer, exp, sqrt, conjugate
-from sympy.physics.quantum import Operator, Commutator, AntiCommutator, Dagger
-from sympy.physics.quantum import HilbertSpace, FockSpace, Ket, Bra
 from sympy.functions.special.tensor_functions import KroneckerDelta
 
+from sympsi import Operator, Commutator, AntiCommutator, Dagger
+from sympsi import HilbertSpace, FockSpace, Ket, Bra
 
 __all__ = [
     'FermionOp',
@@ -33,8 +33,8 @@ class FermionOp(Operator):
     Examples
     ========
 
-    >>> from sympy.physics.quantum import Dagger, AntiCommutator
-    >>> from sympy.physics.quantum.fermion import FermionOp
+    >>> from sympsi import Dagger, AntiCommutator
+    >>> from sympsi.fermion import FermionOp
     >>> c = FermionOp("c")
     >>> AntiCommutator(c, Dagger(c)).doit()
     1
@@ -146,8 +146,8 @@ class MultiFermionOp(Operator):
     Examples
     ========
     
-    >>> from sympy.physics.quantum import Dagger, Commutator
-    >>> from sympy.physics.quantum.fermion import MultiFermionOp
+    >>> from sympsi import Dagger, Commutator
+    >>> from sympsi.fermion import MultiFermionOp
     >>> w1, w2 = symbols("w1, w2")
     >>> a1 = MultiFermionOp("a", w1, 'discrete')
     >>> a2 = MultiFermionOp("a", w2, 'discrete')

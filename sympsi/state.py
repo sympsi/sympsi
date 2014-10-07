@@ -6,7 +6,7 @@ from sympy import (cacheit, conjugate, Expr, Function, integrate, oo, sqrt,
                    Tuple)
 from sympy.core.compatibility import u
 from sympy.printing.pretty.stringpict import prettyForm, stringPict
-from sympy.physics.quantum.qexpr import QExpr, dispatch_method
+from sympsi.qexpr import QExpr, dispatch_method
 
 __all__ = [
     'KetBase',
@@ -213,7 +213,7 @@ class KetBase(StateBase):
 
     def __mul__(self, other):
         """KetBase*other"""
-        from sympy.physics.quantum.operator import OuterProduct
+        from sympsi.operator import OuterProduct
         if isinstance(other, BraBase):
             return OuterProduct(self, other)
         else:
@@ -221,7 +221,7 @@ class KetBase(StateBase):
 
     def __rmul__(self, other):
         """other*KetBase"""
-        from sympy.physics.quantum.innerproduct import InnerProduct
+        from sympsi.innerproduct import InnerProduct
         if isinstance(other, BraBase):
             return InnerProduct(other, self)
         else:
@@ -304,7 +304,7 @@ class BraBase(StateBase):
 
     def __mul__(self, other):
         """BraBase*other"""
-        from sympy.physics.quantum.innerproduct import InnerProduct
+        from sympsi.innerproduct import InnerProduct
         if isinstance(other, KetBase):
             return InnerProduct(self, other)
         else:
@@ -312,7 +312,7 @@ class BraBase(StateBase):
 
     def __rmul__(self, other):
         """other*BraBase"""
-        from sympy.physics.quantum.operator import OuterProduct
+        from sympsi.operator import OuterProduct
         if isinstance(other, KetBase):
             return OuterProduct(other, self)
         else:
@@ -320,7 +320,7 @@ class BraBase(StateBase):
 
     def _represent(self, **options):
         """A default represent that uses the Ket's version."""
-        from sympy.physics.quantum.dagger import Dagger
+        from sympsi.dagger import Dagger
         return Dagger(self.dual._represent(**options))
 
 
@@ -350,7 +350,7 @@ class Ket(State, KetBase):
 
     Create a simple Ket and looking at its properties::
 
-        >>> from sympy.physics.quantum import Ket, Bra
+        >>> from sympsi import Ket, Bra
         >>> from sympy import symbols, I
         >>> k = Ket('psi')
         >>> k
@@ -367,7 +367,7 @@ class Ket(State, KetBase):
         >>> k.dual
         <psi|
         >>> k.dual_class()
-        <class 'sympy.physics.quantum.state.Bra'>
+        <class 'sympsi.state.Bra'>
 
     Take a linear combination of two kets::
 
@@ -414,7 +414,7 @@ class Bra(State, BraBase):
 
     Create a simple Bra and look at its properties::
 
-        >>> from sympy.physics.quantum import Ket, Bra
+        >>> from sympsi import Ket, Bra
         >>> from sympy import symbols, I
         >>> b = Bra('psi')
         >>> b
@@ -429,7 +429,7 @@ class Bra(State, BraBase):
         >>> b.dual
         |psi>
         >>> b.dual_class()
-        <class 'sympy.physics.quantum.state.Ket'>
+        <class 'sympsi.state.Ket'>
 
     Like Kets, Bras can have compound labels and be manipulated in a similar
     manner::
@@ -554,7 +554,7 @@ class TimeDepKet(TimeDepState, KetBase):
 
     Create a TimeDepKet and look at its attributes::
 
-        >>> from sympy.physics.quantum import TimeDepKet
+        >>> from sympsi import TimeDepKet
         >>> k = TimeDepKet('psi', 't')
         >>> k
         |psi;t>
@@ -570,7 +570,7 @@ class TimeDepKet(TimeDepState, KetBase):
         >>> k.dual
         <psi;t|
         >>> k.dual_class()
-        <class 'sympy.physics.quantum.state.TimeDepBra'>
+        <class 'sympsi.state.TimeDepBra'>
     """
 
     @classmethod
@@ -595,7 +595,7 @@ class TimeDepBra(TimeDepState, BraBase):
     Examples
     ========
 
-        >>> from sympy.physics.quantum import TimeDepBra
+        >>> from sympsi import TimeDepBra
         >>> from sympy import symbols, I
         >>> b = TimeDepBra('psi', 't')
         >>> b
@@ -638,7 +638,7 @@ class Wavefunction(Function):
 
         >>> from sympy import Symbol, Piecewise, pi, N
         >>> from sympy.functions import sqrt, sin
-        >>> from sympy.physics.quantum.state import Wavefunction
+        >>> from sympsi.state import Wavefunction
         >>> x = Symbol('x', real=True)
         >>> n = 1
         >>> L = 1
@@ -665,7 +665,7 @@ class Wavefunction(Function):
 
         >>> from sympy import symbols, pi, diff
         >>> from sympy.functions import sqrt, sin
-        >>> from sympy.physics.quantum.state import Wavefunction
+        >>> from sympsi.state import Wavefunction
         >>> x, L = symbols('x,L', positive=True)
         >>> n = symbols('n', integer=True, positive=True)
         >>> g = sqrt(2/L)*sin(n*pi*x/L)
@@ -786,7 +786,7 @@ class Wavefunction(Function):
         Examples
         ========
 
-            >>> from sympy.physics.quantum.state import Wavefunction
+            >>> from sympsi.state import Wavefunction
             >>> from sympy import symbols
             >>> x,y = symbols('x,y')
             >>> f = Wavefunction(x*y, x, y)
@@ -809,7 +809,7 @@ class Wavefunction(Function):
         Examples
         ========
 
-            >>> from sympy.physics.quantum.state import Wavefunction
+            >>> from sympsi.state import Wavefunction
             >>> from sympy import symbols
             >>> x, y = symbols('x, y')
             >>> f = Wavefunction(x**2, (x, 0, 1))
@@ -835,7 +835,7 @@ class Wavefunction(Function):
         Examples
         ========
 
-            >>> from sympy.physics.quantum.state import Wavefunction
+            >>> from sympsi.state import Wavefunction
             >>> from sympy import symbols
             >>> x, y = symbols('x, y')
             >>> f = Wavefunction(x**2, x)
@@ -855,7 +855,7 @@ class Wavefunction(Function):
 
             >>> from sympy import symbols, pi
             >>> from sympy.functions import sqrt, sin
-            >>> from sympy.physics.quantum.state import Wavefunction
+            >>> from sympsi.state import Wavefunction
             >>> x, L = symbols('x,L', positive=True)
             >>> n = symbols('n', integer=True, positive=True)
             >>> g = sqrt(2/L)*sin(n*pi*x/L)
@@ -881,7 +881,7 @@ class Wavefunction(Function):
 
             >>> from sympy import symbols, pi
             >>> from sympy.functions import sqrt, sin
-            >>> from sympy.physics.quantum.state import Wavefunction
+            >>> from sympsi.state import Wavefunction
             >>> x, L = symbols('x,L', positive=True)
             >>> n = symbols('n', integer=True, positive=True)
             >>> g = sqrt(2/L)*sin(n*pi*x/L)
@@ -914,7 +914,7 @@ class Wavefunction(Function):
 
             >>> from sympy import symbols, pi
             >>> from sympy.functions import sqrt, sin
-            >>> from sympy.physics.quantum.state import Wavefunction
+            >>> from sympsi.state import Wavefunction
             >>> x = symbols('x', real=True)
             >>> L = symbols('L', positive=True)
             >>> n = symbols('n', integer=True, positive=True)
@@ -940,7 +940,7 @@ class Wavefunction(Function):
 
             >>> from sympy import symbols, pi
             >>> from sympy.functions import sqrt, sin
-            >>> from sympy.physics.quantum.state import Wavefunction
+            >>> from sympsi.state import Wavefunction
             >>> x, L = symbols('x,L', real=True)
             >>> n = symbols('n', integer=True)
             >>> g = sin(n*pi*x/L)

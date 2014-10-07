@@ -7,8 +7,8 @@ from sympy.core.compatibility import u
 from sympy.integrals.integrals import Integral
 from sympy.printing.pretty.stringpict import prettyForm
 
-from sympy.physics.quantum.dagger import Dagger
-from sympy.physics.quantum.operator import Operator
+from sympsi.dagger import Dagger
+from sympsi.operator import Operator
 
 
 __all__ = [
@@ -42,7 +42,7 @@ class Commutator(Expr):
     Examples
     ========
 
-    >>> from sympy.physics.quantum import Commutator, Dagger, Operator
+    >>> from sympsi import Commutator, Dagger, Operator
     >>> from sympy.abc import x, y
     >>> A = Operator('A')
     >>> B = Operator('B')

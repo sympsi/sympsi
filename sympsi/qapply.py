@@ -8,13 +8,13 @@ from __future__ import print_function, division
 
 from sympy import Add, Mul, Pow, sympify, S
 
-from sympy.physics.quantum.anticommutator import AntiCommutator
-from sympy.physics.quantum.commutator import Commutator
-from sympy.physics.quantum.dagger import Dagger
-from sympy.physics.quantum.innerproduct import InnerProduct
-from sympy.physics.quantum.operator import OuterProduct, Operator
-from sympy.physics.quantum.state import State, KetBase, BraBase, Wavefunction
-from sympy.physics.quantum.tensorproduct import TensorProduct
+from sympsi.anticommutator import AntiCommutator
+from sympsi.commutator import Commutator
+from sympsi.dagger import Dagger
+from sympsi.innerproduct import InnerProduct
+from sympsi.operator import OuterProduct, Operator
+from sympsi.state import State, KetBase, BraBase, Wavefunction
+from sympsi.tensorproduct import TensorProduct
 
 __all__ = [
     'qapply'
@@ -51,7 +51,7 @@ def qapply(e, **options):
     e : Expr
         The original expression, but with the operators applied to states.
     """
-    from sympy.physics.quantum.density import Density
+    from sympsi.density import Density
 
     dagger = options.get('dagger', False)
 

@@ -23,7 +23,7 @@ class HBar(with_metaclass(Singleton, NumberSymbol)):
     Examples
     ========
 
-        >>> from sympy.physics.quantum.constants import hbar
+        >>> from sympsi.constants import hbar
         >>> hbar.evalf()
         1.05457162000000e-34
 

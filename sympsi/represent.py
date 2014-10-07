@@ -9,17 +9,18 @@ TODO:
 from __future__ import print_function, division
 
 from sympy import Add, Expr, I, integrate, Mul, Pow
-from sympy.physics.quantum.dagger import Dagger
-from sympy.physics.quantum.commutator import Commutator
-from sympy.physics.quantum.anticommutator import AntiCommutator
-from sympy.physics.quantum.innerproduct import InnerProduct
-from sympy.physics.quantum.qexpr import QExpr
-from sympy.physics.quantum.tensorproduct import TensorProduct
 from sympy.physics.quantum.matrixutils import flatten_scalar
-from sympy.physics.quantum.state import KetBase, BraBase, StateBase
-from sympy.physics.quantum.operator import Operator, OuterProduct
-from sympy.physics.quantum.qapply import qapply
-from sympy.physics.quantum.operatorset import operators_to_state, state_to_operators
+
+from sympsi.dagger import Dagger
+from sympsi.commutator import Commutator
+from sympsi.anticommutator import AntiCommutator
+from sympsi.innerproduct import InnerProduct
+from sympsi.qexpr import QExpr
+from sympsi.tensorproduct import TensorProduct
+from sympsi.state import KetBase, BraBase, StateBase
+from sympsi.operator import Operator, OuterProduct
+from sympsi.qapply import qapply
+from sympsi.operatorset import operators_to_state, state_to_operators
 
 __all__ = [
     'represent',
@@ -102,7 +103,7 @@ def represent(expr, **options):
     and its spin 1/2 up eigenstate. By definining the ``_represent_SzOp``
     method, the ket can be represented in the z-spin basis.
 
-    >>> from sympy.physics.quantum import Operator, represent, Ket
+    >>> from sympsi import Operator, represent, Ket
     >>> from sympy import Matrix
 
     >>> class SzUpKet(Ket):
@@ -124,7 +125,7 @@ def represent(expr, **options):
     of cartesian position operators and kets give us continuous
     expressions involving DiracDelta functions.
 
-    >>> from sympy.physics.quantum.cartesian import XOp, XKet, XBra
+    >>> from sympsi.cartesian import XOp, XKet, XBra
     >>> X = XOp()
     >>> x = XKet()
     >>> y = XBra('y')
@@ -247,8 +248,8 @@ def rep_innerproduct(expr, **options):
     Examples
     ========
 
-    >>> from sympy.physics.quantum.represent import rep_innerproduct
-    >>> from sympy.physics.quantum.cartesian import XOp, XKet, PxOp, PxKet
+    >>> from sympsi.represent import rep_innerproduct
+    >>> from sympsi.cartesian import XOp, XKet, PxOp, PxKet
     >>> rep_innerproduct(XKet())
     DiracDelta(x - x_1)
     >>> rep_innerproduct(XKet(), basis=PxOp())
@@ -299,8 +300,8 @@ def rep_expectation(expr, **options):
     Examples
     ========
 
-    >>> from sympy.physics.quantum.cartesian import XOp, XKet, PxOp, PxKet
-    >>> from sympy.physics.quantum.represent import rep_expectation
+    >>> from sympsi.cartesian import XOp, XKet, PxOp, PxKet
+    >>> from sympsi.represent import rep_expectation
     >>> rep_expectation(XOp())
     x_1*DiracDelta(x_1 - x_2)
     >>> rep_expectation(XOp(), basis=PxOp())
@@ -358,8 +359,8 @@ def integrate_result(orig_expr, result, **options):
     ========
 
     >>> from sympy import symbols, DiracDelta
-    >>> from sympy.physics.quantum.represent import integrate_result
-    >>> from sympy.physics.quantum.cartesian import XOp, XKet
+    >>> from sympsi.represent import integrate_result
+    >>> from sympsi.cartesian import XOp, XKet
     >>> x_ket = XKet()
     >>> X_op = XOp()
     >>> x, x_1, x_2 = symbols('x, x_1, x_2')
@@ -440,8 +441,8 @@ def get_basis(expr, **options):
     Examples
     ========
 
-    >>> from sympy.physics.quantum.represent import get_basis
-    >>> from sympy.physics.quantum.cartesian import XOp, XKet, PxOp, PxKet
+    >>> from sympsi.represent import get_basis
+    >>> from sympsi.cartesian import XOp, XKet, PxOp, PxKet
     >>> x = XKet()
     >>> X = XOp()
     >>> get_basis(x)
@@ -521,8 +522,8 @@ def enumerate_states(*args, **options):
     Examples
     ========
 
-    >>> from sympy.physics.quantum.cartesian import XBra, XKet
-    >>> from sympy.physics.quantum.represent import enumerate_states
+    >>> from sympsi.cartesian import XBra, XKet
+    >>> from sympsi.represent import enumerate_states
     >>> test = XKet('foo')
     >>> enumerate_states(test, 1, 3)
     [|foo_1>, |foo_2>, |foo_3>]

@@ -7,12 +7,12 @@ from sympy.core.compatibility import u
 from sympy.core.trace import Tr
 from sympy.printing.pretty.stringpict import prettyForm
 
-from sympy.physics.quantum.qexpr import QuantumError
-from sympy.physics.quantum.dagger import Dagger
-from sympy.physics.quantum.commutator import Commutator
-from sympy.physics.quantum.anticommutator import AntiCommutator
-from sympy.physics.quantum.state import Ket, Bra
-from sympy.physics.quantum.matrixutils import (
+from sympsi.qexpr import QuantumError
+from sympsi.dagger import Dagger
+from sympsi.commutator import Commutator
+from sympsi.anticommutator import AntiCommutator
+from sympsi.state import Ket, Bra
+from sympsi.matrixutils import (
     numpy_ndarray,
     scipy_sparse_matrix,
     matrix_tensor_product
@@ -72,7 +72,7 @@ class TensorProduct(Expr):
     Start with a simple tensor product of sympy matrices::
 
         >>> from sympy import I, Matrix, symbols
-        >>> from sympy.physics.quantum import TensorProduct
+        >>> from sympsi import TensorProduct
 
         >>> m1 = Matrix([[1,2],[3,4]])
         >>> m2 = Matrix([[1,0],[0,1]])
@@ -101,7 +101,7 @@ class TensorProduct(Expr):
     We can take the dagger of a tensor product (note the order does NOT reverse
     like the dagger of a normal product):
 
-        >>> from sympy.physics.quantum import Dagger
+        >>> from sympsi import Dagger
         >>> Dagger(tp)
         Dagger(A)xDagger(B)
 
@@ -295,7 +295,7 @@ def tensor_product_simp_Mul(e):
     This is an example of the type of simplification that this function
     performs::
 
-        >>> from sympy.physics.quantum.tensorproduct import \
+        >>> from sympsi.tensorproduct import \
                     tensor_product_simp_Mul, TensorProduct
         >>> from sympy import Symbol
         >>> A = Symbol('A',commutative=False)
@@ -356,8 +356,8 @@ def tensor_product_simp(e, **hints):
     Examples
     ========
 
-    >>> from sympy.physics.quantum import tensor_product_simp
-    >>> from sympy.physics.quantum import TensorProduct
+    >>> from sympsi import tensor_product_simp
+    >>> from sympsi import TensorProduct
     >>> from sympy import Symbol
     >>> A = Symbol('A',commutative=False)
     >>> B = Symbol('B',commutative=False)

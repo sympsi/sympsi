@@ -11,7 +11,7 @@ from sympy import Basic, Interval, oo, sympify
 from sympy.core.compatibility import u
 from sympy.printing.pretty.stringpict import prettyForm
 
-from sympy.physics.quantum.qexpr import QuantumError
+from sympsi.qexpr import QuantumError
 
 from sympy.core.compatibility import reduce
 
@@ -45,7 +45,7 @@ class HilbertSpace(Basic):
     Examples
     ========
 
-    >>> from sympy.physics.quantum.hilbert import HilbertSpace
+    >>> from sympsi.hilbert import HilbertSpace
     >>> hs = HilbertSpace()
     >>> hs
     H
@@ -123,7 +123,7 @@ class ComplexSpace(HilbertSpace):
     ========
 
     >>> from sympy import symbols
-    >>> from sympy.physics.quantum.hilbert import ComplexSpace
+    >>> from sympsi.hilbert import ComplexSpace
     >>> c1 = ComplexSpace(2)
     >>> c1
     C(2)
@@ -194,7 +194,7 @@ class L2(HilbertSpace):
     ========
 
     >>> from sympy import Interval, oo
-    >>> from sympy.physics.quantum.hilbert import L2
+    >>> from sympsi.hilbert import L2
     >>> hs = L2(Interval(0,oo))
     >>> hs
     L2([0, oo))
@@ -246,7 +246,7 @@ class FockSpace(HilbertSpace):
     Examples
     ========
 
-    >>> from sympy.physics.quantum.hilbert import FockSpace
+    >>> from sympsi.hilbert import FockSpace
     >>> hs = FockSpace()
     >>> hs
     F
@@ -297,7 +297,7 @@ class TensorProductHilbertSpace(HilbertSpace):
     Examples
     ========
 
-    >>> from sympy.physics.quantum.hilbert import ComplexSpace, FockSpace
+    >>> from sympsi.hilbert import ComplexSpace, FockSpace
     >>> from sympy import symbols
 
     >>> c = ComplexSpace(2)
@@ -452,7 +452,7 @@ class DirectSumHilbertSpace(HilbertSpace):
     Examples
     ========
 
-    >>> from sympy.physics.quantum.hilbert import ComplexSpace, FockSpace
+    >>> from sympsi.hilbert import ComplexSpace, FockSpace
     >>> from sympy import symbols
 
     >>> c = ComplexSpace(2)
@@ -564,7 +564,7 @@ class TensorPowerHilbertSpace(HilbertSpace):
     Examples
     ========
 
-    >>> from sympy.physics.quantum.hilbert import ComplexSpace, FockSpace
+    >>> from sympsi.hilbert import ComplexSpace, FockSpace
     >>> from sympy import symbols
 
     >>> n = symbols('n')

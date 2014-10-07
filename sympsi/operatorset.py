@@ -16,11 +16,11 @@ TODO List:
 
 from __future__ import print_function, division
 
-from sympy.physics.quantum.cartesian import (XOp, YOp, ZOp, XKet, PxOp, PxKet,
+from sympsi.cartesian import (XOp, YOp, ZOp, XKet, PxOp, PxKet,
                                              PositionKet3D)
-from sympy.physics.quantum.operator import Operator
-from sympy.physics.quantum.state import StateBase, BraBase, Ket
-from sympy.physics.quantum.spin import (JxOp, JyOp, JzOp, J2Op, JxKet, JyKet,
+from sympsi.operator import Operator
+from sympsi.state import StateBase, BraBase, Ket
+from sympsi.spin import (JxOp, JyOp, JzOp, J2Op, JxKet, JyKet,
                                         JzKet)
 
 __all__ = [
@@ -83,9 +83,9 @@ def operators_to_state(operators, **options):
     Examples
     ========
 
-    >>> from sympy.physics.quantum.cartesian import XOp, PxOp
-    >>> from sympy.physics.quantum.operatorset import operators_to_state
-    >>> from sympy.physics.quantum.operator import Operator
+    >>> from sympsi.cartesian import XOp, PxOp
+    >>> from sympsi.operatorset import operators_to_state
+    >>> from sympsi.operator import Operator
     >>> operators_to_state(XOp)
     |x>
     >>> operators_to_state(XOp())
@@ -186,9 +186,9 @@ def state_to_operators(state, **options):
     Examples
     ========
 
-    >>> from sympy.physics.quantum.cartesian import XKet, PxKet, XBra, PxBra
-    >>> from sympy.physics.quantum.operatorset import state_to_operators
-    >>> from sympy.physics.quantum.state import Ket, Bra
+    >>> from sympsi.cartesian import XKet, PxKet, XBra, PxBra
+    >>> from sympsi.operatorset import state_to_operators
+    >>> from sympsi.state import Ket, Bra
     >>> state_to_operators(XKet)
     X
     >>> state_to_operators(XKet())

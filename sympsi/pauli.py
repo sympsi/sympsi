@@ -1,9 +1,9 @@
 """Pauli operators and states"""
 
 from sympy import I, Mul, Integer
-from sympy.physics.quantum import (Operator, Commutator, AntiCommutator,
+from sympsi import (Operator, Commutator, AntiCommutator,
                                    Dagger, IdentityOperator, Ket, Bra)
-from sympy.physics.quantum import ComplexSpace
+from sympsi import ComplexSpace
 from sympy.matrices import Matrix
 from sympy.functions.special.tensor_functions import KroneckerDelta
 
@@ -48,8 +48,8 @@ class SigmaX(SigmaOpBase):
     Examples
     ========
 
-    >>> from sympy.physics.quantum import represent
-    >>> from sympy.physics.quantum.pauli import SigmaX
+    >>> from sympsi import represent
+    >>> from sympsi.pauli import SigmaX
     >>> sx = SigmaX()
     >>> sx
     SigmaX()
@@ -155,8 +155,8 @@ class SigmaY(SigmaOpBase):
     Examples
     ========
 
-    >>> from sympy.physics.quantum import represent
-    >>> from sympy.physics.quantum.pauli import SigmaY
+    >>> from sympsi import represent
+    >>> from sympsi.pauli import SigmaY
     >>> sy = SigmaY()
     >>> sy
     SigmaY()
@@ -259,8 +259,8 @@ class SigmaZ(SigmaOpBase):
     Examples
     ========
 
-    >>> from sympy.physics.quantum import represent
-    >>> from sympy.physics.quantum.pauli import SigmaZ
+    >>> from sympsi import represent
+    >>> from sympsi.pauli import SigmaZ
     >>> sz = SigmaZ()
     >>> sz ** 3
     SigmaZ()
@@ -363,8 +363,8 @@ class SigmaMinus(SigmaOpBase):
     Examples
     ========
 
-    >>> from sympy.physics.quantum import represent, Dagger
-    >>> from sympy.physics.quantum.pauli import SigmaMinus
+    >>> from sympsi import represent, Dagger
+    >>> from sympsi.pauli import SigmaMinus
     >>> sm = SigmaMinus()
     >>> sm
     SigmaMinus()
@@ -482,8 +482,8 @@ class SigmaPlus(SigmaOpBase):
     Examples
     ========
 
-    >>> from sympy.physics.quantum import represent, Dagger
-    >>> from sympy.physics.quantum.pauli import SigmaPlus
+    >>> from sympsi import represent, Dagger
+    >>> from sympsi.pauli import SigmaPlus
     >>> sp = SigmaPlus()
     >>> sp
     SigmaPlus()
