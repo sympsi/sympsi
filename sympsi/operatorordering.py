@@ -4,6 +4,7 @@ import warnings
 
 from sympy import Add, Mul, Pow, Integer
 from sympsi import Operator, Commutator, AntiCommutator
+from sympsi.pauli import SigmaOpBase
 from sympsi.boson import BosonOp
 from sympsi.fermion import FermionOp
 from sympsi.operator import OperatorFunction
@@ -158,8 +159,22 @@ def _normal_ordered_form_factor(product, independent=False, recursive_limit=10,
                             -factors[n + 1] * factors[n] + c.doit())
                     n += 1
 
-        elif isinstance(factors[n], Operator):
+        elif isinstance(factors[n], SigmaOpBase):
 
+            if isinstance(factors[n + 1], BosonOp):
+                new_factors.append(factors[n + 1])
+                new_factors.append(factors[n])
+                n += 1
+            elif (isinstance(factors[n + 1], OperatorFunction) and
+                  isinstance(factors[n + 1].operator, BosonOp)):
+                new_factors.append(factors[n + 1])
+                new_factors.append(factors[n])
+                n += 1
+            else:
+                new_factors.append(factors[n])
+
+        elif isinstance(factors[n], Operator):
+            print("factors[n] is Operator", factors[n])
             if isinstance(factors[n], (BosonOp, FermionOp)):
                 if isinstance(factors[n + 1], (BosonOp, FermionOp)):
                     new_factors.append(factors[n + 1])
