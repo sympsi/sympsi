@@ -12,6 +12,7 @@ __all__ = [
     'integral_pow_expand',
     'sum_pow_expand',
     'replace_dirac_delta',
+    'replace_kronecker_delta',
     'expression_tree_transform',
     'qsimplify',
     'pauli_represent_minus_plus',
@@ -38,8 +39,8 @@ __all__ = [
 
 import warnings
 from sympy import (Add, Mul, Pow, exp, latex, Integral, Sum, Integer, Symbol,
-                   I, pi, simplify, oo, DiracDelta, collect, factorial, diff,
-                   Function, Derivative, Eq, symbols)
+                   I, pi, simplify, oo, DiracDelta, KroneckerDelta, collect,
+                   factorial, diff, Function, Derivative, Eq, symbols)
 
 from sympy import (sin, cos, sinh, cosh)
 from sympsi import Operator, Commutator, Dagger
@@ -370,6 +371,66 @@ def replace_dirac_delta(e, _n=0):
             return Integral(*nargs)
     return e
 
+
+def replace_kronecker_delta(e, L, _n=0):
+    """
+    Look for Integral of the form 
+        L
+        ∫ sin(n*pi*x/L) * sin(m*pi*x/L) dx
+        0
+                    or
+        L
+        ∫ cos(n*pi*x/L) * cos(m*pi*x/L) dx
+        0
+    and replace with L/2 * KroneckerDelta(n, m)
+    if both n and m are positive integers.
+    
+    In addition, look for Integral of the form
+        L
+        ∫ sin(n*pi*x/L) * cos(m*pi*x/L) dx
+        0
+    and replace with 0 if both n and m are
+    positive integers.
+    """
+    if _n > 20:
+        warnings.warn("Too high level or recursion, aborting")
+        return e
+    if isinstance(e, Add):
+        return Add(*[replace_kronecker_delta(arg, L=L, _n=_n+1) for arg in e.args])
+    if isinstance(e, Mul):
+        return Mul(*[replace_kronecker_delta(arg, L=L, _n=_n+1) for arg in e.args])
+    if isinstance(e, Sum):
+        nargs = [replace_kronecker_delta(e.function, L=L, _n=_n+1)]
+        for lim in e.limits:
+            nargs.append(lim)
+        return Sum(*nargs)
+    if isinstance(e, Integral):
+        func = e.function
+        lims = e.limits
+        if len(lims)==1 and (isinstance(func, Mul) and len(func.args)==2
+            and len(lims[0])==3): # works only for definite integrals
+            funcs = func.args
+            dvar, xa, xb = lims[0]
+            if (xa, xb) == (0, L):
+                if ((all([isinstance(f, sin) for f in funcs])
+                    or all([isinstance(f, cos) for f in funcs]))
+                    and all([dvar in f.args[0].args for f in funcs])):
+                    n = [(f.args[0]*L/(dvar*pi)) for f in funcs]
+                    if all([m.is_integer and m.is_positive for m in n]):
+                        return L * KroneckerDelta(n[0], n[1]) / 2
+                
+                if (((isinstance(funcs[0], sin) and isinstance(funcs[1], cos))
+                    or (isinstance(funcs[0], cos) and isinstance(funcs[1], sin)))
+                    and all([dvar in f.args[0].args for f in funcs])):
+                    n = [(f.args[0]*L/(dvar*pi)) for f in funcs]
+                    if all([m.is_integer and m.is_positive for m in n]):
+                        return 0
+        else:
+            nargs = [replace_kronecker_delta(e.function, L=L, _n=_n+1)]
+            for lim in e.limits:
+                nargs.append(lim)
+            return Integral(*nargs)
+    return e
 
 # -----------------------------------------------------------------------------
 # Simplification of quantum expressions
