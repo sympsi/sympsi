@@ -22,7 +22,7 @@ class SigmaOpBase(Operator):
 
     @property
     def use_name(self):
-        return self.args[0] is not False
+        return bool(self.args[0]) is not False
 
     @classmethod
     def default_args(self):
