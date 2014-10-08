@@ -451,6 +451,14 @@ def expression_tree_transform(e, transformations):
         t = type(e)
         return t(*(expression_tree_transform(arg, transformations)
                    for arg in e.args))
+    elif isinstance(e, (Sum, Integral)):
+        t = type(e)
+        f = e.function
+        l = e.limits
+        nargs = [expression_tree_transform(f, transformations)]
+        for lim in l:
+            nargs.append(lim)
+        return t(*nargs)
     else:
         return e
 
