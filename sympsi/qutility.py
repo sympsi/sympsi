@@ -107,10 +107,10 @@ def exchange_integral_order(e):
         return e
 
 
-def _pull_outwards_sum(e, _n=0):
-    f = pull_outwards(e.function, _n=_n+1)
+def _pull_outwards_sum(e, add=True, _n=0):
+    f = pull_outwards(e.function, add=add, _n=_n+1)
     dvar = e.variables
-    if isinstance(f.expand(), Add):
+    if add and isinstance(f.expand(), Add):
         f = f.expand()
         add_args = []
         for term in f.args:
@@ -119,7 +119,7 @@ def _pull_outwards_sum(e, _n=0):
                 args.append(lim)
             add_args.append(Sum(*args))
         ne = Add(*add_args)
-        return pull_outwards(ne, _n=_n+1)
+        return pull_outwards(ne, add=add, _n=_n+1)
     if isinstance(f, Mul):
         c = [arg for arg in f.args if not isinstance(arg, Sum)]
         s_in = [arg for arg in f.args if isinstance(arg, Sum)]
@@ -137,14 +137,15 @@ def _pull_outwards_sum(e, _n=0):
     return Sum(f, e.limits)
 
 
-def _pull_outwards_integral(e, _n=0):
+def _pull_outwards_integral(e, add=True, _n=0):
     f = e.function
     if isinstance(f, Sum):  # ∫ ∑ [...]  --> ∑ ∫ [...]
-        return pull_outwards(Sum(Integral(f.function, e.limits), f.limits))
+        return pull_outwards(Sum(Integral(f.function, e.limits), f.limits),
+                             add=add, _n=_n+1)
 
-    f = pull_outwards(e.function, _n=_n+1)
+    f = pull_outwards(e.function, add=add, _n=_n+1)
     dvar = e.variables
-    if isinstance(f.expand(), Add):
+    if add and isinstance(f.expand(), Add):
         f = f.expand()
         add_args = []
         for term in f.args:
@@ -152,7 +153,7 @@ def _pull_outwards_integral(e, _n=0):
             for lim in e.limits:
                 args.append(lim)
             add_args.append(Integral(*args))
-        return pull_outwards(Add(*add_args), _n=_n+1)
+        return pull_outwards(Add(*add_args), add=add, _n=_n+1)
     if isinstance(f, Mul):
         c = [arg for arg in f.args if not (isinstance(arg, Integral)
                                            or isinstance(arg, Sum))]
@@ -162,7 +163,7 @@ def _pull_outwards_integral(e, _n=0):
         if not s_in == []:  # First, take summations out of the integrand
             nfunc = Mul(*c) * s_in[0].function * Mul(*s_in[1:]) * Mul(*i_in)
             return pull_outwards(Sum(Integral(nfunc, e.limits),
-                                     s_in[0].limits), _n=_n+1)
+                                     s_in[0].limits), add=add, _n=_n+1)
 
         const = [arg for arg in c if dvar[0] not in arg.free_symbols]
         nconst = [arg for arg in c if dvar[0] in arg.free_symbols]
@@ -179,7 +180,7 @@ def _pull_outwards_integral(e, _n=0):
     return e
 
 
-def pull_outwards(e, _n=0):
+def pull_outwards(e, add=True, _n=0):
     """
     Trick to maximally pull out constant elements and summation from the
     integrand or the summand.
@@ -188,14 +189,14 @@ def pull_outwards(e, _n=0):
         warnings.warn("Too high level or recursion, aborting")
         return e
 
-    if isinstance(e, Add):
-        return Add(*[pull_outwards(arg, _n=_n+1) for arg in e.args]).expand()
+    if add and isinstance(e, Add):
+        return Add(*[pull_outwards(arg, add=add, _n=_n+1) for arg in e.args]).expand()
     if isinstance(e, Mul):
-        return Mul(*[pull_outwards(arg, _n=_n+1) for arg in e.args]).expand()
+        return Mul(*[pull_outwards(arg, add=add, _n=_n+1) for arg in e.args])
     if isinstance(e, Sum):
-        return _pull_outwards_sum(e, _n=_n+1)
+        return _pull_outwards_sum(e, add=add, _n=_n+1)
     if isinstance(e, Integral):
-        return _pull_outwards_integral(e, _n=_n+1)
+        return _pull_outwards_integral(e, add=add,  _n=_n+1)
     return e
 
 
@@ -404,6 +405,7 @@ def replace_kronecker_delta(e, L, _n=0):
         for lim in e.limits:
             nargs.append(lim)
         return Sum(*nargs)
+        
     if isinstance(e, Integral):
         func = e.function
         lims = e.limits
