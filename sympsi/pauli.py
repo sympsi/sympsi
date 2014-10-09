@@ -684,3 +684,164 @@ class SigmaZBra(Bra):
     @classmethod
     def dual_class(self):
         return SigmaZKet
+
+
+def _qsimplify_pauli_product(a, b):
+    """
+    Internal helper function for simplifying products of Pauli operators.
+    """
+    if not (isinstance(a, SigmaOpBase) and isinstance(b, SigmaOpBase)):
+        return Mul(a, b)
+
+    if a.name != b.name:
+        # Pauli matrices with different labels commute; sort by name
+        if a.name < b.name:
+            return Mul(a, b)
+        else:
+            return Mul(b, a)
+
+    elif isinstance(a, SigmaX):
+
+        if isinstance(b, SigmaX):
+            return Integer(1)
+
+        if isinstance(b, SigmaY):
+            return I * SigmaZ(a.name)
+
+        if isinstance(b, SigmaZ):
+            return - I * SigmaY(a.name)
+
+        if isinstance(b, SigmaMinus):
+            return (Integer(1)/2 + SigmaZ(a.name)/2)
+
+        if isinstance(b, SigmaPlus):
+            return (Integer(1)/2 - SigmaZ(a.name)/2)
+
+    elif isinstance(a, SigmaY):
+
+        if isinstance(b, SigmaX):
+            return - I * SigmaZ(a.name)
+
+        if isinstance(b, SigmaY):
+            return Integer(1)
+
+        if isinstance(b, SigmaZ):
+            return I * SigmaX(a.name)
+
+        if isinstance(b, SigmaMinus):
+            return -I * (Integer(1) + SigmaZ(a.name))/2
+
+        if isinstance(b, SigmaPlus):
+            return I * (Integer(1) - SigmaZ(a.name))/2
+
+    elif isinstance(a, SigmaZ):
+
+        if isinstance(b, SigmaX):
+            return I * SigmaY(a.name)
+
+        if isinstance(b, SigmaY):
+            return - I * SigmaX(a.name)
+
+        if isinstance(b, SigmaZ):
+            return Integer(1)
+
+        if isinstance(b, SigmaMinus):
+            return - SigmaMinus(a.name)
+
+        if isinstance(b, SigmaPlus):
+            return SigmaPlus(a.name)
+
+    elif isinstance(a, SigmaMinus):
+
+        if isinstance(b, SigmaX):
+            return (Integer(1) - SigmaZ(a.name))/2
+
+        if isinstance(b, SigmaY):
+            return - I * (Integer(1) - SigmaZ(a.name))/2
+
+        if isinstance(b, SigmaZ):
+            # (SigmaX(a.name) - I * SigmaY(a.name))/2
+            return SigmaMinus(b.name)
+
+        if isinstance(b, SigmaMinus):
+            return Integer(0)
+
+        if isinstance(b, SigmaPlus):
+            return Integer(1)/2 - SigmaZ(a.name)/2
+
+    elif isinstance(a, SigmaPlus):
+
+        if isinstance(b, SigmaX):
+            return (Integer(1) + SigmaZ(a.name))/2
+
+        if isinstance(b, SigmaY):
+            return I * (Integer(1) + SigmaZ(a.name))/2
+
+        if isinstance(b, SigmaZ):
+            #-(SigmaX(a.name) + I * SigmaY(a.name))/2
+            return -SigmaPlus(a.name)
+
+        if isinstance(b, SigmaMinus):
+            return (Integer(1) + SigmaZ(a.name))/2
+
+        if isinstance(b, SigmaPlus):
+            return Integer(0)
+
+    else:
+        return a * b
+
+
+def qsimplify_pauli(e):
+    """
+    Simplify an expression that includes products of pauli operators.
+
+    Parameters
+    ==========
+
+    e : expression
+        An expression that contains products of Pauli operators that is
+        to be simplified.
+
+    Examples
+    ========
+
+    >>> from sympy.physics.quantum.pauli import SigmaX, SigmaY
+    >>> from sympy.physics.quantum.pauli import qsimplify_pauli
+    >>> sx, sy = SigmaX(), SigmaY()
+    >>> sx * sy
+    SigmaX()*SigmaY()
+    >>> qsimplify_pauli(sx * sy)
+    I*SigmaZ()
+    """
+    if isinstance(e, Operator):
+        return e
+
+    if isinstance(e, (Add, Pow, exp)):
+        t = type(e)
+        return t(*(qsimplify_pauli(arg) for arg in e.args))
+
+    if isinstance(e, Mul):
+
+        c, nc = e.args_cnc()
+
+        nc_s = []
+        while nc:
+            curr = nc.pop(0)
+
+            while (len(nc) and
+                   isinstance(curr, SigmaOpBase) and
+                   isinstance(nc[0], SigmaOpBase) and
+                   curr.name == nc[0].name):
+
+                x = nc.pop(0)
+                y = _qsimplify_pauli_product(curr, x)
+                c1, nc1 = y.args_cnc()
+                curr = Mul(*nc1)
+                c = c + c1
+
+            nc_s.append(curr)
+
+        return Mul(*c) * Mul(*nc_s)
+
+    return e
+
