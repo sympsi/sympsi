@@ -1,15 +1,14 @@
 """Pauli operators and states"""
 
 from sympy import I, Mul, Integer
-from sympsi import (Operator, Commutator, AntiCommutator,
-                                   Dagger, IdentityOperator, Ket, Bra)
+from sympsi import Operator, Ket, Bra
 from sympsi import ComplexSpace
 from sympy.matrices import Matrix
 from sympy.functions.special.tensor_functions import KroneckerDelta
 
 __all__ = [
     'SigmaX', 'SigmaY', 'SigmaZ', 'SigmaMinus', 'SigmaPlus', 'SigmaZKet',
-    'SigmaZBra'
+    'SigmaZBra', 'qsimplify_pauli'
 ]
 
 
