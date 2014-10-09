@@ -1,6 +1,6 @@
 """Pauli operators and states"""
 
-from sympy import I, Mul, Integer
+from sympy import I, Mul, Add, Pow, exp, Integer
 from sympsi import Operator, Ket, Bra
 from sympsi import ComplexSpace
 from sympy.matrices import Matrix
@@ -843,4 +843,3 @@ def qsimplify_pauli(e):
         return Mul(*c) * Mul(*nc_s)
 
     return e
-
