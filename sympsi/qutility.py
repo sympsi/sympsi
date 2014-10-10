@@ -40,7 +40,8 @@ __all__ = [
 import warnings
 from sympy import (Add, Mul, Pow, exp, latex, Integral, Sum, Integer, Symbol,
                    I, pi, simplify, oo, DiracDelta, KroneckerDelta, collect,
-                   factorial, diff, Function, Derivative, Eq, symbols)
+                   factorial, diff, Function, Derivative, Eq, symbols,
+                   Matrix, Equality, MatMul)
 
 from sympy import (sin, cos, sinh, cosh)
 from sympsi import Operator, Commutator, Dagger
@@ -1039,12 +1040,21 @@ def _operator_to_func(e, op_func_map):
 
 
 def semi_classical_eqm(H, c_ops, N=20):
-
+    """
+    Generate a set of semiclassical equations of motion from a Hamiltonian
+    and set of collapse operators. Equations of motion for all operators that
+    are included in either the Hamiltonian or the list of collapse operators
+    will be generated, as well as any operators that are included in the
+    equations of motion for the orignal operators. If the system of equations
+    for the averages of operators does not close, the highest order operators
+    will be truncated and removed from the equations.
+    """
     op_eqm = {}
 
     ops = extract_all_operators(H + sum(c_ops))
 
-    print("Hamiltonian operators: ", ops)
+    if debug:
+        print("Hamiltonian operators: ", ops)
 
     t = symbols("t", positive=True)
 
@@ -1052,7 +1062,6 @@ def semi_classical_eqm(H, c_ops, N=20):
     while ops:
 
         if n > N:
-            print("breaking on large n (%d > %d)" % (n, N))
             break
 
         n += 1
@@ -1073,10 +1082,12 @@ def semi_classical_eqm(H, c_ops, N=20):
         for new_op in new_ops:
             if ((not new_op.is_Number) and
                     new_op not in op_eqm.keys() and new_op not in ops):
-                print(new_op, "not included, adding")
+                if debug:
+                    print(new_op, "not included, adding")
                 ops.append(new_op)
 
-    print("unresolved ops: ", ops)
+    if debug:
+        print("unresolved ops: ", ops)
 
     for op, eqm in op_eqm.items():
         op_eqm[op] = drop_terms_containing(op_eqm[op], ops)
@@ -1088,20 +1099,39 @@ def semi_classical_eqm(H, c_ops, N=20):
 
     sc_eqm = {}
     for op, eqm in op_eqm.items():
-        sc_eqm[Expectation(op)] = Expectation(eqm).expand(expectation=True)
+        sc_eqm[op] = Expectation(eqm).expand(expectation=True)
 
     op_func_map = {}
+    op_index_map = {}
     for n, op in enumerate(op_eqm):
         op_func_map[op] = Function("A%d" % n)(t)
+        op_index_map[op] = n
 
-    print("Operator -> Function map: ", op_func_map)
+    if debug:
+        print("Operator -> Function map: ", op_func_map)
 
     sc_ode = {}
     for op, eqm in sc_eqm.items():
-        sc_ode[op] = Eq(Derivative(_operator_to_func(op, op_func_map), t),
+        sc_ode[op] = Eq(Derivative(_operator_to_func(Expectation(op), op_func_map), t),
                         _operator_to_func(eqm, op_func_map))
 
     #for eqm in op_eqm:
     #    eqm_ops = extract_all_operators(op_eqm[op])
 
-    return op_eqm, sc_eqm, sc_ode, op_func_map
+    return op_eqm, sc_eqm, sc_ode, op_func_map, op_index_map
+
+
+def semi_classical_eqm_matrix_form(sc_ode, t, ofm):
+    """
+    Convert a set of semiclassical equations of motion to matrix form.
+    """
+    ops = operator_sort_by_order(ofm.keys())
+    As = [ofm[op] for op in ops]
+    A = Matrix(As)
+    b = Matrix([[sc_ode[op].rhs.subs({A: 0 for A in As})] for op in ops])
+
+    M = Matrix([[((sc_ode[op1].rhs - b[m]).subs({A: 0 for A in (set(As) - set([ofm[op2]]))}) / ofm[op2]).expand()
+                 for m, op1 in enumerate(ops)]
+                for n, op2 in enumerate(ops)]).T
+
+    return Equality(-Derivative(A, t),  b + MatMul(M, A)), A, M, b
