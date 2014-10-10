@@ -14,7 +14,7 @@ The SymPsi package
 
     $ pip install git+https://github.com/sympsi/sympsi.git
 
-and to upgrade a previously installed sympsi package to the latest version, just add the `--upgrade` flag:
+and to upgrade an existing installation, just add the `--upgrade` flag:
 
     $ pip install --upgrade git+https://github.com/sympsi/sympsi.git
 
