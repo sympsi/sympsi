@@ -44,8 +44,6 @@ from sympy import (Add, Mul, Pow, exp, latex, Integral, Sum, Integer, Symbol,
 
 from sympy import (sin, cos, sinh, cosh)
 from sympsi import Operator, Commutator, Dagger
-#from sympsi.boson import BosonOp
-#from sympsi.fermion import FermionOp
 from sympsi.operatorordering import normal_ordered_form
 from sympsi.expectation import Expectation
 from sympsi.pauli import (SigmaX, SigmaY, SigmaMinus, SigmaPlus)
@@ -591,7 +589,6 @@ def split_coeff_operator(e):
         return Mul(*c_args), Mul(*o_args)
 
     if isinstance(e, Add):
-        # XXX: fix this  -> return to lists
         return [split_coeff_operator(arg) for arg in e.args]
 
     if debug:
@@ -866,9 +863,16 @@ def bch_expansion(A, B, N=6, collect_operators=None, independent=False,
 
     try:
         if expansion_search and c:
-            c_fs = list(c.free_symbols)[0]
+            if isinstance(c, (list, tuple)):
+                #c_fs = sum([list(cc.free_symbols) for cc in c])[0]
+                c_fs = list(list(c)[0].free_symbols)[0]
+                c = c[0]
+            else:
+                c_fs = list(c.free_symbols)[0]
+
             if debug:
-                print("free symbols in c: ", c_fs)
+                print("free symbols candidates: ", c, c_fs)
+
             return qsimplify(e_collected.subs({
                 exp(c).series(c, n=N).removeO(): exp(c),
                 exp(-c).series(-c, n=N).removeO(): exp(-c),
