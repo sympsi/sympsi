@@ -133,7 +133,7 @@ def _pull_outwards_sum(e, add=True, _n=0):
             for lim in e.limits[1:]:
                 args.append(lim)
             return Sum(*args)
-    return Sum(f, e.limits)
+    return pull_outwards(Sum(f, e.limits), add=add, _n=_n+1)
 
 
 def _pull_outwards_integral(e, add=True, _n=0):
@@ -175,7 +175,7 @@ def _pull_outwards_integral(e, add=True, _n=0):
                     e.limits[0])]
             for lim in e.limits[1:]:
                 args.append(lim)
-            return Integral(*args)
+            return pull_outwards(Integral(*args), add=add, _n=_n+1)
     return e
 
 
@@ -191,7 +191,12 @@ def pull_outwards(e, add=True, _n=0):
     if add and isinstance(e, Add):
         return Add(*[pull_outwards(arg, add=add, _n=_n+1) for arg in e.args]).expand()
     if isinstance(e, Mul):
-        return Mul(*[pull_outwards(arg, add=add, _n=_n+1) for arg in e.args])
+        if add:
+            return Mul(*[pull_outwards(arg, add=add,
+                                       _n=_n+1) for arg in e.args]).expand()
+        else:
+            return Mul(*[pull_outwards(arg, add=add,
+                                       _n=_n+1) for arg in e.args])
     if isinstance(e, Sum):
         return _pull_outwards_sum(e, add=add, _n=_n+1)
     if isinstance(e, Integral):
