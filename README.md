@@ -1,5 +1,22 @@
 SymΨ - Symbolic Quantum Mechanics with Python and SymPy
-=========================================================
+=======================================================
 
-This Python package is a fork of a subset of [quantum](https://github.com/sympy/sympy/tree/master/sympy/physics/quantum) module in [SymPy](http://www.sympy.org) for experimental development. For a list of original authors of the SymPy quantum module, see [this page](https://github.com/sympy/sympy/commits/master/sympy/physics/quantum).
+This Python package is an exerimental fork and extension of the [quantum](https://github.com/sympy/sympy/tree/master/sympy/physics/quantum) module in [SymPy](http://www.sympy.org). For a list of contributors to the SymPy quantum module, see [this page](https://github.com/sympy/sympy/commits/master/sympy/physics/quantum). New features developed for SymPsi will be contributed upstream to the SymPy quantum module when mature and tested.
+
+Installation
+------------
+
+SymPsi requires a recent version of SymPy. To install sympy (see also the SymPy installations instructions), run:
+
+    $ pip install sympy
+
+The SymPsi package
+
+    $ pip install git+https://github.com/sympsi/sympsi.git
+
+and to upgrade a previously installed sympsi package to the latest version, just add the `--upgrade` flag:
+
+    $ pip install --upgrade git+https://github.com/sympsi/sympsi.git
+
+
 
