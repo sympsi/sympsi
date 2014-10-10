@@ -6,11 +6,11 @@ This Python package is an exerimental fork and extension of the [quantum](https:
 Installation
 ------------
 
-SymPsi requires a recent version of SymPy. To install sympy (see also the SymPy installations instructions), run:
+SymPsi requires a recent version of SymPy. To install SymPy (see also the [SymPy installation instructions](http://docs.sympy.org/latest/install.html)), run:
 
     $ pip install sympy
 
-The SymPsi package
+The SymPsi package can be installed using:
 
     $ pip install git+https://github.com/sympsi/sympsi.git
 
