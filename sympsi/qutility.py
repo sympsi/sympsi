@@ -35,6 +35,7 @@ __all__ = [
     'operator_lindblad_dissipator',
     'operator_master_equation',
     'semi_classical_eqm',
+    'semi_classical_eqm_matrix_form'
     ]
 
 import warnings
@@ -1120,10 +1121,12 @@ def semi_classical_eqm(H, c_ops, N=20):
         sc_ode[op] = Eq(Derivative(_operator_to_func(Expectation(op), op_func_map), t),
                         _operator_to_func(eqm, op_func_map))
 
+    ops = operator_sort_by_order(op_func_map.keys())
+
     #for eqm in op_eqm:
     #    eqm_ops = extract_all_operators(op_eqm[op])
 
-    return op_eqm, sc_eqm, sc_ode, op_func_map, op_index_map
+    return ops, op_eqm, sc_eqm, sc_ode, op_func_map, op_index_map
 
 
 def semi_classical_eqm_matrix_form(sc_ode, t, ofm):
