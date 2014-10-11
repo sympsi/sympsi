@@ -174,7 +174,6 @@ def _normal_ordered_form_factor(product, independent=False, recursive_limit=10,
                 new_factors.append(factors[n])
 
         elif isinstance(factors[n], Operator):
-            print("factors[n] is Operator", factors[n])
             if isinstance(factors[n], (BosonOp, FermionOp)):
                 if isinstance(factors[n + 1], (BosonOp, FermionOp)):
                     new_factors.append(factors[n + 1])
