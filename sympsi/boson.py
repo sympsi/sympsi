@@ -52,10 +52,6 @@ class BosonOp(Operator):
     def is_annihilation(self):
         return bool(self.args[1])
 
-    @property
-    def free_symbols(self):
-        return set([])
-
     @classmethod
     def default_args(self):
         return ("a", True)
@@ -187,11 +183,7 @@ class MultiBosonOp(BosonOp):
     >>> Commutator(Dagger(b1), Dagger(b2)).doit()
     0
     
-    """
-    @property
-    def free_symbols(self):
-        return self.args[1].free_symbols
-        
+    """        
     @property
     def name(self):
         return self.args[0]
@@ -199,6 +191,10 @@ class MultiBosonOp(BosonOp):
     @property
     def mode(self):
         return self.args[1]
+
+    @property
+    def free_symbols(self):
+        return set([self, self.mode])
     
     @property
     def normalization_type(self):
