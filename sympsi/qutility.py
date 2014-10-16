@@ -39,6 +39,7 @@ __all__ = [
     ]
 
 import warnings
+from collections import namedtuple
 from sympy import (Add, Mul, Pow, exp, latex, Integral, Sum, Integer, Symbol,
                    I, pi, simplify, oo, DiracDelta, KroneckerDelta, collect,
                    factorial, diff, Function, Derivative, Eq, symbols,
@@ -1098,10 +1099,11 @@ def semi_classical_eqm(H, c_ops, N=20):
     for op, eqm in op_eqm.items():
         op_eqm[op] = drop_terms_containing(op_eqm[op], ops)
 
+    ops_unresolved = []
     for op, eqm in op_eqm.items():
         for o in extract_all_operators(eqm):
             if o not in op_eqm.keys():
-                print("Unresolved operator: ", o)
+                ops_unresolved.append(o)
 
     sc_eqm = {}
     for op, eqm in op_eqm.items():
@@ -1126,20 +1128,33 @@ def semi_classical_eqm(H, c_ops, N=20):
     #for eqm in op_eqm:
     #    eqm_ops = extract_all_operators(op_eqm[op])
 
-    return ops, op_eqm, sc_eqm, sc_ode, op_func_map, op_index_map
+    SemiClassicalEQM = namedtuple('SemiClassicalEQM',
+                                  ['operators',
+                                   'operators_unresolved',
+                                   'operator_eqs',
+                                   'sc_eqs',
+                                   'sc_ode',
+                                   'op_func_map',
+                                   'op_index_map',
+                                   't'
+                                   ])
+
+    return SemiClassicalEQM(ops, ops_unresolved,
+                            op_eqm, sc_eqm, sc_ode,
+                            op_func_map, op_index_map, t)
 
 
-def semi_classical_eqm_matrix_form(sc_ode, t, ofm):
+def semi_classical_eqm_matrix_form(sc_eqm):
     """
     Convert a set of semiclassical equations of motion to matrix form.
     """
-    ops = operator_sort_by_order(ofm.keys())
-    As = [ofm[op] for op in ops]
+    ops = operator_sort_by_order(sc_eqm.op_func_map.keys())
+    As = [sc_eqm.op_func_map[op] for op in ops]
     A = Matrix(As)
-    b = Matrix([[sc_ode[op].rhs.subs({A: 0 for A in As})] for op in ops])
+    b = Matrix([[sc_eqm.sc_ode[op].rhs.subs({A: 0 for A in As})] for op in ops])
 
-    M = Matrix([[((sc_ode[op1].rhs - b[m]).subs({A: 0 for A in (set(As) - set([ofm[op2]]))}) / ofm[op2]).expand()
+    M = Matrix([[((sc_eqm.sc_ode[op1].rhs - b[m]).subs({A: 0 for A in (set(As) - set([sc_eqm.op_func_map[op2]]))}) / sc_eqm.op_func_map[op2]).expand()
                  for m, op1 in enumerate(ops)]
                 for n, op2 in enumerate(ops)]).T
 
-    return Equality(-Derivative(A, t),  b + MatMul(M, A)), A, M, b
+    return Equality(-Derivative(A, sc_eqm.t),  b + MatMul(M, A)), A, M, b
