@@ -867,30 +867,61 @@ def _expansion_search(e, alpha, N):
 
    #     e_sub = e
 
-        flist = [exp, lambda x: sin(x) / x, cos, lambda x : sinh(x) / x, cosh]
-        
+        flist = [exp, lambda x: sin(x) / x, cos, lambda x : sinh(x) / x, cosh,
+                 lambda x: (1 - cos(x))/(x**2/2)]
+        # should (cosh(x)-1)/(x**2/2) be included?
+
         a_fs = list(alpha.free_symbols)[0]
         
-        nargs = []
-        for arg in e.args:
-            [c, nc] = arg.args_cnc()
+
+        print("e: ", e)
+        
+        if isinstance(e, Mul):
+            [c, nc] = e.args_cnc()
             print(c, nc)
             if nc and c:
                 c_expr = Mul(*c)
                 d = _lowest_order_term(c_expr)
                 print("d: ", d)
+
                 c_expr_normal = (c_expr / d).expand()
                 
                 print("c_expr_normal: ", c_expr_normal)
+#                c_expr_normal = c_expr_normal.subs(
+#                {f(alpha).series(alpha, n=N-_order(d)).removeO(): f(alpha) for f in flist}
+#                )
                 c_expr_normal = c_expr_normal.subs(
-                     {f(a_fs).series(a_fs, n=N).removeO(): f(a_fs) for f in flist}
+                {f(a_fs).series(a_fs, n=N-_order(d)).removeO(): f(a_fs) for f in flist}
                 )
-                
-                nargs.append(d * c_expr_normal * Mul(*nc))
-            else:
-                nargs.append(arg)
 
-        return qsimplify(Add(*nargs))
+                
+                return d * c_expr_normal * Mul(*nc)
+            else:
+                return qsimplify(e)
+
+        if isinstance(e, Add):
+            return Add(*(_expansion_search(arg, alpha, N) for arg in e.args))
+#            nargs = []
+#            for arg in e.args:
+#                [c, nc] = arg.args_cnc()
+#                print(c, nc)
+#                if nc and c:
+#                    c_expr = Mul(*c)
+#                    d = _lowest_order_term(c_expr)
+#                    print("d: ", d)
+#
+#                    c_expr_normal = (c_expr / d).expand()
+#                
+#                    print("c_expr_normal: ", c_expr_normal)
+#                    c_expr_normal = c_expr_normal.subs(
+#                         {f(a_fs).series(a_fs, n=N-_order(d)).removeO(): f(a_fs) for f in flist}
+#                         )
+#
+#                    nargs.append(d * c_expr_normal * Mul(*nc))
+#                else:
+#                    nargs.append(arg)
+
+        return qsimplify(e)
 
     except Exception as e:
         print("Failed to identify series expansions: " + str(e))
