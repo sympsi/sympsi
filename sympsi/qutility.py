@@ -871,7 +871,6 @@ def _expansion_search(e, alpha, N):
                  lambda x: sin(x) / x, cos, lambda x : sinh(x) / x, cosh,
                  lambda x: (1 - cos(x))/(x**2/2)]
         # should (cosh(x)-1)/(x**2/2) be included?
-        
 
         print("e: ", e, "alpha: ", alpha)
         
@@ -879,7 +878,7 @@ def _expansion_search(e, alpha, N):
             [c, nc] = e.args_cnc()
             print(c, nc)
             if nc and c:
-                c_expr = Mul(*c)
+                c_expr = Mul(*c).expand()
                 d = _lowest_order_term(c_expr)
                 print("d: ", d)
 
@@ -911,22 +910,47 @@ def bch_expansion(A, B, N=6, collect_operators=None, independent=False,
 
     if debug:
         print("bch_expansion: ", A, B)
-
-    c, _ = split_coeff_operator(A)
+    
+    cno = split_coeff_operator(A)
+    if isinstance(cno, list):
+        nvar = len(cno)
+        c_list = []
+        o_list = []
+        for n in range(nvar):
+            c_list.append(cno[n][0])
+            o_list.append(cno[n][1])
+    else:
+        nvar = 1
+        c_list, o_list = [cno[0]], [cno[1]]
 
     if debug:
-        print("A coefficient: ", c)
+        print("A coefficient: ", c_list)
 
-    if debug:
-        print("bch_expansion: ")
+#    if debug:
+#        print("bch_expansion: ")
+    
+    rep_list = []
+    var_list = []
+    for n in range(nvar):
+        rep_list.append(Dummy())
+        
+        coeff, sym = c_list[n].as_coeff_Mul()
+        if isinstance(sym, Mul):
+            sym_ = simplify(sym)
+            if I in sym_.args:
+                var_list.append(sym_/I)
+            elif any([isinstance(arg, exp) for arg in sym_.args]):
+                nexps = Mul(*[arg for arg in sym_.args if not isinstance(arg, exp)])
+                exps = Mul(*[arg for arg in sym_.args if isinstance(arg, exp)])
 
-    rep = Dummy()
+                if I in simplify(exps).exp.args:
+                    var_list.append(nexps)
+                else:
+                    var_list.append(sym_)
+        else:
+            var_list.append(sym)
 
-    coeff, sym = c.as_coeff_Mul()
-    if isinstance(sym, Mul):
-        alpha = sym/I if I in sym.args else sym
-
-    A_rep = A.subs(alpha, rep)
+    A_rep = A.subs({var_list[n]: rep_list[n] for n in range(nvar)})
 
     e_bch_rep = _bch_expansion(A_rep, B, N=N).doit(independent=independent)
 
@@ -957,13 +981,23 @@ def bch_expansion(A, B, N=6, collect_operators=None, independent=False,
         print("search for series expansions: ", expansion_search)
     
     print("e_collected:", e_collected)
-    if expansion_search and c:
-        if I in e_collected.find(I):
-            return _expansion_search(e_collected, I*rep, N).subs(rep, alpha)
-        else:
-            return _expansion_search(e_collected, rep, N).subs(rep, alpha)
+    if expansion_search and c_list:
+        for n in range(nvar):
+            if (I*rep_list[n] in e_collected.find(I*rep_list[n])
+                or -I*rep_list[n] in e_collected.find(-I*rep_list[n])):
+                e_collected = _expansion_search(e_collected,
+                                                I*rep_list[n],
+                                                N).subs(rep_list[n],
+                                                        var_list[n])
+            else:
+                e_collected = _expansion_search(e_collected,
+                                                rep_list[n],
+                                                N).subs(rep_list[n],
+                                                        var_list[n])
+        return e_collected
     else:
-        return e_collected.subs(rep, alpha)
+        return e_collected.subs({
+                    rep_list[n]: var_list[n] for n in range(nvar)})
 
 
 # -----------------------------------------------------------------------------
