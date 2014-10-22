@@ -43,7 +43,7 @@ from collections import namedtuple
 from sympy import (Add, Mul, Pow, exp, latex, Integral, Sum, Integer, Symbol,
                    I, pi, simplify, oo, DiracDelta, KroneckerDelta, collect,
                    factorial, diff, Function, Derivative, Eq, symbols,
-                   Matrix, Equality, MatMul)
+                   Matrix, Equality, MatMul, Dummy)
 
 from sympy import (sin, cos, sinh, cosh)
 from sympsi import Operator, Commutator, Dagger
@@ -871,10 +871,7 @@ def _expansion_search(e, alpha, N):
                  lambda x: (1 - cos(x))/(x**2/2)]
         # should (cosh(x)-1)/(x**2/2) be included?
 
-        a_fs = list(alpha.free_symbols)[0]
-        
-
-        print("e: ", e)
+        print("e: ", e, "alpha: ", alpha)
         
         if isinstance(e, Mul):
             [c, nc] = e.args_cnc()
@@ -887,13 +884,9 @@ def _expansion_search(e, alpha, N):
                 c_expr_normal = (c_expr / d).expand()
                 
                 print("c_expr_normal: ", c_expr_normal)
-#                c_expr_normal = c_expr_normal.subs(
-#                {f(alpha).series(alpha, n=N-_order(d)).removeO(): f(alpha) for f in flist}
-#                )
                 c_expr_normal = c_expr_normal.subs(
-                {f(a_fs).series(a_fs, n=N-_order(d)).removeO(): f(a_fs) for f in flist}
+                {f(alpha).series(alpha, n=N-_order(d)).removeO(): f(alpha) for f in flist}
                 )
-
                 
                 return d * c_expr_normal * Mul(*nc)
             else:
@@ -944,12 +937,20 @@ def bch_expansion(A, B, N=6, collect_operators=None, independent=False,
     if debug:
         print("bch_expansion: ")
 
-    e_bch = _bch_expansion(A, B, N=N).doit(independent=independent)
+    rep = Dummy()
+
+    coeff, sym = c.as_coeff_Mul()
+    if isinstance(sym, Mul):
+        alpha = sym/I if I in sym.args else sym
+
+    A_rep = A.subs(alpha, rep)
+
+    e_bch_rep = _bch_expansion(A_rep, B, N=N).doit(independent=independent)
 
     if debug:
         print("simplify: ")
 
-    e = qsimplify(normal_ordered_form(e_bch.expand(),
+    e = qsimplify(normal_ordered_form(e_bch_rep.expand(),
                                       recursive_limit=25,
                                       independent=independent).expand())
 
@@ -973,7 +974,7 @@ def bch_expansion(A, B, N=6, collect_operators=None, independent=False,
         print("search for series expansions: ", expansion_search)
 
     if expansion_search and c:
-        return _expansion_search(e_collected, c, N)
+        return _expansion_search(e_collected, rep, N).subs(rep, alpha)
     else:
         return e_collected
 
