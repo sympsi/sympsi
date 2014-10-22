@@ -479,6 +479,7 @@ def qsimplify(e_orig, _n=0):
         warnings.warn("Too high level or recursion, aborting")
         return e_orig
 
+    
     e = normal_ordered_form(e_orig)
 
     if isinstance(e, Add):
@@ -820,58 +821,76 @@ def _bch_expansion(A, B, N=10):
     return e
 
 
-def _expansion_search(e, c, N):
+def _order(e):
+    fs = list(e.free_symbols)
+    if isinstance(e, Pow) and e.base == fs[0]:
+        return e.exp
+    elif isinstance(e, Mul):
+        o = sum([_order(arg) for arg in e.args])
+        return o
+    elif isinstance(e, Add):
+        o = max([_order(arg) for arg in e.args])
+        return o
+    else:
+        return 0
+    
+def _lowest_order_term(e):
+
+    if isinstance(e, Add):
+        min_order = _order(e.args[0])
+        min_expr = e.args[0]
+        for arg in e.args:
+            arg_order  = _order(arg)
+            if arg_order < min_order:
+                min_order = arg_order
+                min_expr = arg
+        return min_expr
+    else:
+        return e
+
+
+def _expansion_search(e, alpha, N):
     """
     Search for and substitute terms that match a series expansion of
     fundamental math functions.
     """
     try:
+        #if isinstance(c, (list, tuple)):
+        #    #c_fs = sum([list(cc.free_symbols) for cc in c])[0]
+        #    c_fs = list(list(c)[0].free_symbols)[0]
+        #    c = c[0]
+        #else:
+        #    c_fs = list(c.free_symbols)[0]
 
-        if isinstance(c, (list, tuple)):
-            #c_fs = sum([list(cc.free_symbols) for cc in c])[0]
-            c_fs = list(list(c)[0].free_symbols)[0]
-            c = c[0]
-        else:
-            c_fs = list(c.free_symbols)[0]
+        #if debug:
+        #    print("free symbols candidates: ", c, c_fs)
 
-        if debug:
-            print("free symbols candidates: ", c, c_fs)
+   #     e_sub = e
 
-        e_sub = e.subs({
-            exp(c).series(c, n=N).removeO(): exp(c),
-            exp(-c).series(-c, n=N).removeO(): exp(-c),
-            exp(2*c).series(2*c, n=N).removeO(): exp(2*c),
-            exp(-2*c).series(-2*c, n=N).removeO(): exp(-2*c),
-            #
-            cosh(c).series(c, n=N).removeO(): cosh(c),
-            sinh(c).series(c, n=N).removeO(): sinh(c),
-            sinh(2*c).series(2 * c, n=N).removeO(): sinh(2*c),
-            cosh(2*c).series(2 * c, n=N).removeO(): cosh(2*c),
-            sinh(4*c).series(4 * c, n=N).removeO(): sinh(4*c),
-            cosh(4*c).series(4 * c, n=N).removeO(): cosh(4*c),
-            #
-            sin(c).series(c, n=N).removeO(): sin(c),
-            cos(c).series(c, n=N).removeO(): cos(c),
-            sin(2*c).series(2*c, n=N).removeO(): sin(2*c),
-            cos(2*c).series(2*c, n=N).removeO(): cos(2*c),
-            sin(2*I*c).series(2*I*c, n=N).removeO(): sin(2*I*c),
-            sin(-2*I*c).series(-2*I*c, n=N).removeO(): sin(-2*I*c),
-            cos(2*I*c).series(2*I*c, n=N).removeO(): cos(2*I*c),
-            cos(-2*I*c).series(-2*I*c, n=N).removeO(): cos(-2*I*c),
-            #
-            sin(c_fs).series(c_fs, n=N).removeO(): sin(c_fs),
-            cos(c_fs).series(c_fs, n=N).removeO(): cos(c_fs),
-            (sin(c_fs)/2).series(c_fs, n=N).removeO(): sin(c_fs)/2,
-            (cos(c_fs)/2).series(c_fs, n=N).removeO(): cos(c_fs)/2,
-            # sin(2*c_fs).series(c_fs, n=N).removeO(): sin(2*c_fs),
-            # cos(2*c_fs).series(c_fs, n=N).removeO(): cos(2*c_fs),
-            # sin(2 * c_fs).series(2 * c_fs, n=N).removeO(): sin(2 * c_fs),
-            # cos(2 * c_fs).series(2 * c_fs, n=N).removeO(): cos(2 * c_fs),
-            # (sin(c_fs)/2).series(c_fs, n=N).removeO(): sin(c_fs)/2,
-            # (cos(c_fs)/2).series(c_fs, n=N).removeO(): cos(c_fs)/2,
-            })
+        flist = [exp, lambda x: sin(x) / x, cos, lambda x : sinh(x) / x, cosh]
+        
+        a_fs = list(alpha.free_symbols)[0]
+        
+        nargs = []
+        for arg in e.args:
+            [c, nc] = arg.args_cnc()
+            print(c, nc)
+            if nc and c:
+                c_expr = Mul(*c)
+                d = _lowest_order_term(c_expr)
+                print("d: ", d)
+                c_expr_normal = (c_expr / d).expand()
+                
+                print("c_expr_normal: ", c_expr_normal)
+                c_expr_normal = c_expr_normal.subs(
+                     {f(a_fs).series(a_fs, n=N).removeO(): f(a_fs) for f in flist}
+                )
+                
+                nargs.append(d * c_expr_normal * Mul(*nc))
+            else:
+                nargs.append(arg)
 
-        return qsimplify(e_sub)
+        return qsimplify(Add(*nargs))
 
     except Exception as e:
         print("Failed to identify series expansions: " + str(e))
