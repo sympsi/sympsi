@@ -894,25 +894,6 @@ def _expansion_search(e, alpha, N):
 
         if isinstance(e, Add):
             return Add(*(_expansion_search(arg, alpha, N) for arg in e.args))
-#            nargs = []
-#            for arg in e.args:
-#                [c, nc] = arg.args_cnc()
-#                print(c, nc)
-#                if nc and c:
-#                    c_expr = Mul(*c)
-#                    d = _lowest_order_term(c_expr)
-#                    print("d: ", d)
-#
-#                    c_expr_normal = (c_expr / d).expand()
-#                
-#                    print("c_expr_normal: ", c_expr_normal)
-#                    c_expr_normal = c_expr_normal.subs(
-#                         {f(a_fs).series(a_fs, n=N-_order(d)).removeO(): f(a_fs) for f in flist}
-#                         )
-#
-#                    nargs.append(d * c_expr_normal * Mul(*nc))
-#                else:
-#                    nargs.append(arg)
 
         return qsimplify(e)
 
@@ -976,7 +957,7 @@ def bch_expansion(A, B, N=6, collect_operators=None, independent=False,
     if expansion_search and c:
         return _expansion_search(e_collected, rep, N).subs(rep, alpha)
     else:
-        return e_collected
+        return e_collected.subs(rep, alpha)
 
 
 # -----------------------------------------------------------------------------
