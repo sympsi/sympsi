@@ -867,9 +867,11 @@ def _expansion_search(e, alpha, N):
 
    #     e_sub = e
 
-        flist = [exp, lambda x: sin(x) / x, cos, lambda x : sinh(x) / x, cosh,
+        flist = [exp, lambda x: exp(-x),
+                 lambda x: sin(x) / x, cos, lambda x : sinh(x) / x, cosh,
                  lambda x: (1 - cos(x))/(x**2/2)]
         # should (cosh(x)-1)/(x**2/2) be included?
+        
 
         print("e: ", e, "alpha: ", alpha)
         
@@ -953,9 +955,13 @@ def bch_expansion(A, B, N=6, collect_operators=None, independent=False,
 
     if debug:
         print("search for series expansions: ", expansion_search)
-
+    
+    print("e_collected:", e_collected)
     if expansion_search and c:
-        return _expansion_search(e_collected, rep, N).subs(rep, alpha)
+        if I in e_collected.find(I):
+            return _expansion_search(e_collected, I*rep, N).subs(rep, alpha)
+        else:
+            return _expansion_search(e_collected, rep, N).subs(rep, alpha)
     else:
         return e_collected.subs(rep, alpha)
 
