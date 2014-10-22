@@ -820,6 +820,64 @@ def _bch_expansion(A, B, N=10):
     return e
 
 
+def _expansion_search(e, c, N):
+    """
+    Search for and substitute terms that match a series expansion of
+    fundamental math functions.
+    """
+    try:
+
+        if isinstance(c, (list, tuple)):
+            #c_fs = sum([list(cc.free_symbols) for cc in c])[0]
+            c_fs = list(list(c)[0].free_symbols)[0]
+            c = c[0]
+        else:
+            c_fs = list(c.free_symbols)[0]
+
+        if debug:
+            print("free symbols candidates: ", c, c_fs)
+
+        e_sub = e.subs({
+            exp(c).series(c, n=N).removeO(): exp(c),
+            exp(-c).series(-c, n=N).removeO(): exp(-c),
+            exp(2*c).series(2*c, n=N).removeO(): exp(2*c),
+            exp(-2*c).series(-2*c, n=N).removeO(): exp(-2*c),
+            #
+            cosh(c).series(c, n=N).removeO(): cosh(c),
+            sinh(c).series(c, n=N).removeO(): sinh(c),
+            sinh(2*c).series(2 * c, n=N).removeO(): sinh(2*c),
+            cosh(2*c).series(2 * c, n=N).removeO(): cosh(2*c),
+            sinh(4*c).series(4 * c, n=N).removeO(): sinh(4*c),
+            cosh(4*c).series(4 * c, n=N).removeO(): cosh(4*c),
+            #
+            sin(c).series(c, n=N).removeO(): sin(c),
+            cos(c).series(c, n=N).removeO(): cos(c),
+            sin(2*c).series(2*c, n=N).removeO(): sin(2*c),
+            cos(2*c).series(2*c, n=N).removeO(): cos(2*c),
+            sin(2*I*c).series(2*I*c, n=N).removeO(): sin(2*I*c),
+            sin(-2*I*c).series(-2*I*c, n=N).removeO(): sin(-2*I*c),
+            cos(2*I*c).series(2*I*c, n=N).removeO(): cos(2*I*c),
+            cos(-2*I*c).series(-2*I*c, n=N).removeO(): cos(-2*I*c),
+            #
+            sin(c_fs).series(c_fs, n=N).removeO(): sin(c_fs),
+            cos(c_fs).series(c_fs, n=N).removeO(): cos(c_fs),
+            (sin(c_fs)/2).series(c_fs, n=N).removeO(): sin(c_fs)/2,
+            (cos(c_fs)/2).series(c_fs, n=N).removeO(): cos(c_fs)/2,
+            # sin(2*c_fs).series(c_fs, n=N).removeO(): sin(2*c_fs),
+            # cos(2*c_fs).series(c_fs, n=N).removeO(): cos(2*c_fs),
+            # sin(2 * c_fs).series(2 * c_fs, n=N).removeO(): sin(2 * c_fs),
+            # cos(2 * c_fs).series(2 * c_fs, n=N).removeO(): cos(2 * c_fs),
+            # (sin(c_fs)/2).series(c_fs, n=N).removeO(): sin(c_fs)/2,
+            # (cos(c_fs)/2).series(c_fs, n=N).removeO(): cos(c_fs)/2,
+            })
+
+        return qsimplify(e_sub)
+
+    except Exception as e:
+        print("Failed to identify series expansions: " + str(e))
+        return e
+
+
 def bch_expansion(A, B, N=6, collect_operators=None, independent=False,
                   expansion_search=True):
 
@@ -864,55 +922,9 @@ def bch_expansion(A, B, N=6, collect_operators=None, independent=False,
     if debug:
         print("search for series expansions: ", expansion_search)
 
-    try:
-        if expansion_search and c:
-            if isinstance(c, (list, tuple)):
-                #c_fs = sum([list(cc.free_symbols) for cc in c])[0]
-                c_fs = list(list(c)[0].free_symbols)[0]
-                c = c[0]
-            else:
-                c_fs = list(c.free_symbols)[0]
-
-            if debug:
-                print("free symbols candidates: ", c, c_fs)
-
-            return qsimplify(e_collected.subs({
-                exp(c).series(c, n=N).removeO(): exp(c),
-                exp(-c).series(-c, n=N).removeO(): exp(-c),
-                exp(2*c).series(2*c, n=N).removeO(): exp(2*c),
-                exp(-2*c).series(-2*c, n=N).removeO(): exp(-2*c),
-                #
-                cosh(c).series(c, n=N).removeO(): cosh(c),
-                sinh(c).series(c, n=N).removeO(): sinh(c),
-                sinh(2*c).series(2 * c, n=N).removeO(): sinh(2*c),
-                cosh(2*c).series(2 * c, n=N).removeO(): cosh(2*c),
-                sinh(4*c).series(4 * c, n=N).removeO(): sinh(4*c),
-                cosh(4*c).series(4 * c, n=N).removeO(): cosh(4*c),
-                #
-                sin(c).series(c, n=N).removeO(): sin(c),
-                cos(c).series(c, n=N).removeO(): cos(c),
-                sin(2*c).series(2*c, n=N).removeO(): sin(2*c),
-                cos(2*c).series(2*c, n=N).removeO(): cos(2*c),
-                sin(2*I*c).series(2*I*c, n=N).removeO(): sin(2*I*c),
-                sin(-2*I*c).series(-2*I*c, n=N).removeO(): sin(-2*I*c),
-                cos(2*I*c).series(2*I*c, n=N).removeO(): cos(2*I*c),
-                cos(-2*I*c).series(-2*I*c, n=N).removeO(): cos(-2*I*c),
-                #
-                sin(c_fs).series(c_fs, n=N).removeO(): sin(c_fs),
-                cos(c_fs).series(c_fs, n=N).removeO(): cos(c_fs),
-                (sin(c_fs)/2).series(c_fs, n=N).removeO(): sin(c_fs)/2,
-                (cos(c_fs)/2).series(c_fs, n=N).removeO(): cos(c_fs)/2,
-                # sin(2*c_fs).series(c_fs, n=N).removeO(): sin(2*c_fs),
-                # cos(2*c_fs).series(c_fs, n=N).removeO(): cos(2*c_fs),
-                # sin(2 * c_fs).series(2 * c_fs, n=N).removeO(): sin(2 * c_fs),
-                # cos(2 * c_fs).series(2 * c_fs, n=N).removeO(): cos(2 * c_fs),
-                # (sin(c_fs)/2).series(c_fs, n=N).removeO(): sin(c_fs)/2,
-                # (cos(c_fs)/2).series(c_fs, n=N).removeO(): cos(c_fs)/2,
-                }))
-        else:
-            return e_collected
-    except Exception as e:
-        print("Failed to identify series expansions: " + str(e))
+    if expansion_search and c:
+        return _expansion_search(e_collected, c, N)
+    else:
         return e_collected
 
 
@@ -1046,7 +1058,34 @@ def _operator_to_func(e, op_func_map):
     return e
 
 
-def semi_classical_eqm(H, c_ops, N=20):
+def _sceqm_factor_op(op, ops):
+
+    if isinstance(op, Pow):
+        for n in range(1, op.exp):
+            if Pow(op.base, op.exp - n) in ops and Pow(op.base, n) in ops:
+                return op.base, Pow(op.base, op.exp - 1)
+
+        raise Exception("Failed to find factorization of %r" % op)
+
+    if isinstance(op, Mul):
+        args = []
+        for arg in op.args:
+            if isinstance(arg, Pow):
+                for n in range(arg.exp):
+                    args.append(arg.base)
+            else:
+                args.append(arg)
+
+        for n in range(1, len(op.args)):
+            if Mul(*(args[:n])) in ops and Mul(*(args[n:])) in ops:
+                return Mul(*(args[:n])), Mul(*(args[n:]))
+
+        raise Exception("Failed to find factorization of %r" % op)
+
+    return op.args[0], Mul(*(op.args[1:]))
+
+
+def semi_classical_eqm(H, c_ops, N=20, discard_unresolved=True):
     """
     Generate a set of semiclassical equations of motion from a Hamiltonian
     and set of collapse operators. Equations of motion for all operators that
@@ -1096,18 +1135,32 @@ def semi_classical_eqm(H, c_ops, N=20):
     if debug:
         print("unresolved ops: ", ops)
 
-    for op, eqm in op_eqm.items():
-        op_eqm[op] = drop_terms_containing(op_eqm[op], ops)
 
-    ops_unresolved = []
-    for op, eqm in op_eqm.items():
-        for o in extract_all_operators(eqm):
-            if o not in op_eqm.keys():
-                ops_unresolved.append(o)
+    if discard_unresolved:
+        for op, eqm in op_eqm.items():
+            op_eqm[op] = drop_terms_containing(op_eqm[op], ops)
+        ops_unresolved = []
+    else:
+        ops_unresolved = ops
 
+    #for op, eqm in op_eqm.items():
+    #    for o in extract_all_operators(eqm):
+    #        if o not in op_eqm.keys():
+    #            print("unresolved operator: %r" % o)
+
+    op_factorization = {}
     sc_eqm = {}
     for op, eqm in op_eqm.items():
+        ops = extract_all_operators(eqm)
         sc_eqm[op] = Expectation(eqm).expand(expectation=True)
+
+        for op2 in ops_unresolved:
+            if op2 not in op_eqm.keys():
+                # need to factor op2
+                sub_ops = _sceqm_factor_op(op2, op_eqm.keys())
+                factored_expt = Mul(*(Expectation(o) for o in sub_ops))
+                op_factorization[Expectation(op2)] = factored_expt
+                sc_eqm[op] = sc_eqm[op].subs(Expectation(op2), factored_expt)
 
     op_func_map = {}
     op_index_map = {}
@@ -1132,6 +1185,7 @@ def semi_classical_eqm(H, c_ops, N=20):
                                   ['operators',
                                    'operators_unresolved',
                                    'operator_eqs',
+                                   'operator_factorization',
                                    'sc_eqs',
                                    'sc_ode',
                                    'op_func_map',
@@ -1140,7 +1194,7 @@ def semi_classical_eqm(H, c_ops, N=20):
                                    ])
 
     return SemiClassicalEQM(ops, ops_unresolved,
-                            op_eqm, sc_eqm, sc_ode,
+                            op_eqm, op_factorization, sc_eqm, sc_ode,
                             op_func_map, op_index_map, t)
 
 
