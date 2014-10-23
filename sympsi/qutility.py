@@ -26,6 +26,7 @@ __all__ = [
     'drop_terms_containing',
     'drop_c_number_terms',
     'subs_single',
+    'SymEq',
     'recursive_commutator',
     'bch_expansion',
     'unitary_transformation',
@@ -45,6 +46,8 @@ from sympy import (Add, Mul, Pow, exp, latex, Integral, Sum, Integer, Symbol,
                    factorial, diff, Function, Derivative, Eq, symbols,
                    Matrix, Equality, MatMul, Dummy)
 
+from sympy.core.sympify import _sympify
+from sympy.core.relational import Relational
 from sympy import (sin, cos, sinh, cosh)
 from sympsi import Operator, Commutator, Dagger
 from sympsi.operatorordering import normal_ordered_form
@@ -784,6 +787,25 @@ def subs_single(O, subs_map):
     else:
         return O
 
+
+class SymEq(Relational):
+    """A symbolic equality that is never automatically evaluated.
+    """
+    rel_op = '=='
+
+    __slots__ = []
+
+    is_Equality = True
+
+    def __new__(cls, lhs, rhs=0, **options):
+        lhs = _sympify(lhs)
+        rhs = _sympify(rhs)
+
+        return Relational.__new__(cls, lhs, rhs, **options)
+
+    @classmethod
+    def _eval_relation(cls, lhs, rhs):
+        return None
 
 # -----------------------------------------------------------------------------
 # Commutators and BCH expansions
