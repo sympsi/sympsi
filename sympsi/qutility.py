@@ -855,36 +855,20 @@ def _expansion_search(e, alpha, N):
     fundamental math functions.
     """
     try:
-        #if isinstance(c, (list, tuple)):
-        #    #c_fs = sum([list(cc.free_symbols) for cc in c])[0]
-        #    c_fs = list(list(c)[0].free_symbols)[0]
-        #    c = c[0]
-        #else:
-        #    c_fs = list(c.free_symbols)[0]
-
-        #if debug:
-        #    print("free symbols candidates: ", c, c_fs)
-
-   #     e_sub = e
-
         flist = [exp, lambda x: exp(-x),
                  lambda x: sin(x) / x, cos, lambda x : sinh(x) / x, cosh,
                  lambda x: (1 - cos(x))/(x**2/2)]
-        # should (cosh(x)-1)/(x**2/2) be included?
-
-        print("e: ", e, "alpha: ", alpha)
+        # TODO: should (cosh(x)-1)/(x**2/2) be included?
         
         if isinstance(e, Mul):
-            [c, nc] = e.args_cnc()
-            print(c, nc)
+            c, nc = e.args_cnc()
+
             if nc and c:
                 c_expr = Mul(*c).expand()
                 d = _lowest_order_term(c_expr)
-                print("d: ", d)
 
-                c_expr_normal = (c_expr / d).expand()
-                
-                print("c_expr_normal: ", c_expr_normal)
+                c_expr_normal = (c_expr / d).expand()                
+
                 c_expr_normal = c_expr_normal.subs(
                 {f(alpha).series(alpha, n=N-_order(d)).removeO(): f(alpha) for f in flist}
                 )
@@ -925,9 +909,6 @@ def bch_expansion(A, B, N=6, collect_operators=None, independent=False,
 
     if debug:
         print("A coefficient: ", c_list)
-
-#    if debug:
-#        print("bch_expansion: ")
     
     rep_list = []
     var_list = []
@@ -980,7 +961,9 @@ def bch_expansion(A, B, N=6, collect_operators=None, independent=False,
     if debug:
         print("search for series expansions: ", expansion_search)
     
-    print("e_collected:", e_collected)
+    if debug:
+        print("e_collected:", e_collected)
+
     if expansion_search and c_list:
         for n in range(nvar):
             if (I*rep_list[n] in e_collected.find(I*rep_list[n])
