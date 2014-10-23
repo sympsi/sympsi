@@ -844,43 +844,76 @@ def _lowest_order_term(e):
             if arg_order < min_order:
                 min_order = arg_order
                 min_expr = arg
-        return min_expr
+        return min_expr, min_order
     else:
-        return e
+        return e, _order(e)
 
 
-def _expansion_search(e, alpha, N):
+def _expansion_search(e, alpha, N, is_complex=False):
     """
     Search for and substitute terms that match a series expansion of
     fundamental math functions.
     """
+    if debug:
+        print("_expansion_search: ", e)
+
     try:
-        flist = [exp, lambda x: exp(-x),
-                 lambda x: sin(x) / x, cos, lambda x : sinh(x) / x, cosh,
-                 lambda x: (1 - cos(x))/(x**2/2)]
+        flist = [[exp, 0],
+                 [lambda x: exp(-x), 0],
+                 [lambda x: (exp(x) - 1) / x, 1],  # ???
+                 [lambda x: (1 - exp(-x)) / x, 1],  # ???
+                 [cos, 0],
+                 [lambda x: sin(x) / x, 1],
+                 [cosh, 0],
+                 [lambda x: sinh(x) / x, 1],
+                 [lambda x: (1 - cos(x))/(x**2/2), 2]]
+
+        if is_complex:
+            iflist = [[lambda x: exp(I*x), 0],
+                      [lambda x: exp(-I*x), 0],
+                      [lambda x: (exp(I*x) - 1) / (I*x), 1],
+                      [lambda x: (1 - exp(-I*x)) / (I*x), 1]]
+
+            flist = iflist + flist
+            
         # TODO: should (cosh(x)-1)/(x**2/2) be included?
-        
+
+        fseries = {}
+
         if isinstance(e, Mul):
-            c, nc = e.args_cnc()
+            e_args = [e]
 
-            if nc and c:
-                c_expr = Mul(*c).expand()
-                d = _lowest_order_term(c_expr)
+        elif isinstance(e, Add):
+            e_args = e.args
 
-                c_expr_normal = (c_expr / d).expand()                
+        else:
+            return e
 
-                c_expr_normal = c_expr_normal.subs(
-                {f(alpha).series(alpha, n=N-_order(d)).removeO(): f(alpha) for f in flist}
-                )
-                
-                return d * c_expr_normal * Mul(*nc)
+        newargs = []
+        for e in e_args:
+            if isinstance(e, Mul):
+                c, nc = e.args_cnc()
+
+                if nc and c:
+                    c_expr = Mul(*c).expand()
+                    d, _ = _lowest_order_term(c_expr)
+                    c_expr_normal = (c_expr / d).expand()
+                    c_expr_subs = c_expr_normal
+                    for f, d_order in flist:
+                        if f not in fseries.keys():
+                            fseries[f] = f(alpha).series(alpha, n=N-d_order).removeO()
+
+                        c_expr_subs = c_expr_subs.subs(fseries[f], f(alpha))
+                        if c_expr_subs != c_expr_normal:
+                            break
+
+                    newargs.append(d * c_expr_subs * Mul(*nc))
+                else:
+                    newargs.append(e)
             else:
-                return qsimplify(e)
-
-        if isinstance(e, Add):
-            return Add(*(_expansion_search(arg, alpha, N) for arg in e.args))
-
-        return qsimplify(e)
+                newargs.append(e)
+                
+        return Add(*newargs)
 
     except Exception as e:
         print("Failed to identify series expansions: " + str(e))
@@ -960,27 +993,24 @@ def bch_expansion(A, B, N=6, collect_operators=None, independent=False,
 
     if debug:
         print("search for series expansions: ", expansion_search)
-    
+
     if debug:
-        print("e_collected:", e_collected)
+        print("e_collected: ", e_collected)
 
     if expansion_search and c_list:
         for n in range(nvar):
-            if (I*rep_list[n] in e_collected.find(I*rep_list[n])
-                or -I*rep_list[n] in e_collected.find(-I*rep_list[n])):
-                e_collected = _expansion_search(e_collected,
-                                                I*rep_list[n],
-                                                N).subs(rep_list[n],
-                                                        var_list[n])
+            if e_collected.find(I * rep_list[n]) or e_collected.find(-I * rep_list[n]):
+                is_complex = True
             else:
-                e_collected = _expansion_search(e_collected,
-                                                rep_list[n],
-                                                N).subs(rep_list[n],
-                                                        var_list[n])
+                is_complex = False
+
+            e_collected = _expansion_search(e_collected, rep_list[n], N,
+                                            is_complex=is_complex)
+            e_collected = e_collected.subs(rep_list[n], var_list[n])
         return e_collected
     else:
-        return e_collected.subs({
-                    rep_list[n]: var_list[n] for n in range(nvar)})
+        return e_collected.subs(
+            {rep_list[n]: var_list[n] for n in range(nvar)})
 
 
 # -----------------------------------------------------------------------------
