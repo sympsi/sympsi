@@ -1021,7 +1021,7 @@ def bch_expansion(A, B, N=6, collect_operators=None, independent=False,
 
     if expansion_search and c_list:
         for n in range(nvar):
-            if e_collected.find(I * rep_list[n]) or e_collected.find(-I * rep_list[n]):
+            if e_collected.find(I):
                 is_complex = True
             else:
                 is_complex = False
