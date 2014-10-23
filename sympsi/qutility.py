@@ -43,7 +43,7 @@ from collections import namedtuple
 from sympy import (Add, Mul, Pow, exp, latex, Integral, Sum, Integer, Symbol,
                    I, pi, simplify, oo, DiracDelta, KroneckerDelta, collect,
                    factorial, diff, Function, Derivative, Eq, symbols,
-                   Matrix, Equality, MatMul)
+                   Matrix, Equality, MatMul, Dummy)
 
 from sympy import (sin, cos, sinh, cosh)
 from sympsi import Operator, Commutator, Dagger
@@ -479,6 +479,7 @@ def qsimplify(e_orig, _n=0):
         warnings.warn("Too high level or recursion, aborting")
         return e_orig
 
+    
     e = normal_ordered_form(e_orig)
 
     if isinstance(e, Add):
@@ -820,58 +821,66 @@ def _bch_expansion(A, B, N=10):
     return e
 
 
-def _expansion_search(e, c, N):
+def _order(e):
+    fs = list(e.free_symbols)
+    if isinstance(e, Pow) and e.base == fs[0]:
+        return e.exp
+    elif isinstance(e, Mul):
+        o = sum([_order(arg) for arg in e.args])
+        return o
+    elif isinstance(e, Add):
+        o = max([_order(arg) for arg in e.args])
+        return o
+    else:
+        return 0
+    
+def _lowest_order_term(e):
+
+    if isinstance(e, Add):
+        min_order = _order(e.args[0])
+        min_expr = e.args[0]
+        for arg in e.args:
+            arg_order  = _order(arg)
+            if arg_order < min_order:
+                min_order = arg_order
+                min_expr = arg
+        return min_expr
+    else:
+        return e
+
+
+def _expansion_search(e, alpha, N):
     """
     Search for and substitute terms that match a series expansion of
     fundamental math functions.
     """
     try:
+        flist = [exp, lambda x: exp(-x),
+                 lambda x: sin(x) / x, cos, lambda x : sinh(x) / x, cosh,
+                 lambda x: (1 - cos(x))/(x**2/2)]
+        # TODO: should (cosh(x)-1)/(x**2/2) be included?
+        
+        if isinstance(e, Mul):
+            c, nc = e.args_cnc()
 
-        if isinstance(c, (list, tuple)):
-            #c_fs = sum([list(cc.free_symbols) for cc in c])[0]
-            c_fs = list(list(c)[0].free_symbols)[0]
-            c = c[0]
-        else:
-            c_fs = list(c.free_symbols)[0]
+            if nc and c:
+                c_expr = Mul(*c).expand()
+                d = _lowest_order_term(c_expr)
 
-        if debug:
-            print("free symbols candidates: ", c, c_fs)
+                c_expr_normal = (c_expr / d).expand()                
 
-        e_sub = e.subs({
-            exp(c).series(c, n=N).removeO(): exp(c),
-            exp(-c).series(-c, n=N).removeO(): exp(-c),
-            exp(2*c).series(2*c, n=N).removeO(): exp(2*c),
-            exp(-2*c).series(-2*c, n=N).removeO(): exp(-2*c),
-            #
-            cosh(c).series(c, n=N).removeO(): cosh(c),
-            sinh(c).series(c, n=N).removeO(): sinh(c),
-            sinh(2*c).series(2 * c, n=N).removeO(): sinh(2*c),
-            cosh(2*c).series(2 * c, n=N).removeO(): cosh(2*c),
-            sinh(4*c).series(4 * c, n=N).removeO(): sinh(4*c),
-            cosh(4*c).series(4 * c, n=N).removeO(): cosh(4*c),
-            #
-            sin(c).series(c, n=N).removeO(): sin(c),
-            cos(c).series(c, n=N).removeO(): cos(c),
-            sin(2*c).series(2*c, n=N).removeO(): sin(2*c),
-            cos(2*c).series(2*c, n=N).removeO(): cos(2*c),
-            sin(2*I*c).series(2*I*c, n=N).removeO(): sin(2*I*c),
-            sin(-2*I*c).series(-2*I*c, n=N).removeO(): sin(-2*I*c),
-            cos(2*I*c).series(2*I*c, n=N).removeO(): cos(2*I*c),
-            cos(-2*I*c).series(-2*I*c, n=N).removeO(): cos(-2*I*c),
-            #
-            sin(c_fs).series(c_fs, n=N).removeO(): sin(c_fs),
-            cos(c_fs).series(c_fs, n=N).removeO(): cos(c_fs),
-            (sin(c_fs)/2).series(c_fs, n=N).removeO(): sin(c_fs)/2,
-            (cos(c_fs)/2).series(c_fs, n=N).removeO(): cos(c_fs)/2,
-            # sin(2*c_fs).series(c_fs, n=N).removeO(): sin(2*c_fs),
-            # cos(2*c_fs).series(c_fs, n=N).removeO(): cos(2*c_fs),
-            # sin(2 * c_fs).series(2 * c_fs, n=N).removeO(): sin(2 * c_fs),
-            # cos(2 * c_fs).series(2 * c_fs, n=N).removeO(): cos(2 * c_fs),
-            # (sin(c_fs)/2).series(c_fs, n=N).removeO(): sin(c_fs)/2,
-            # (cos(c_fs)/2).series(c_fs, n=N).removeO(): cos(c_fs)/2,
-            })
+                c_expr_normal = c_expr_normal.subs(
+                {f(alpha).series(alpha, n=N-_order(d)).removeO(): f(alpha) for f in flist}
+                )
+                
+                return d * c_expr_normal * Mul(*nc)
+            else:
+                return qsimplify(e)
 
-        return qsimplify(e_sub)
+        if isinstance(e, Add):
+            return Add(*(_expansion_search(arg, alpha, N) for arg in e.args))
+
+        return qsimplify(e)
 
     except Exception as e:
         print("Failed to identify series expansions: " + str(e))
@@ -885,21 +894,51 @@ def bch_expansion(A, B, N=6, collect_operators=None, independent=False,
 
     if debug:
         print("bch_expansion: ", A, B)
-
-    c, _ = split_coeff_operator(A)
+    
+    cno = split_coeff_operator(A)
+    if isinstance(cno, list):
+        nvar = len(cno)
+        c_list = []
+        o_list = []
+        for n in range(nvar):
+            c_list.append(cno[n][0])
+            o_list.append(cno[n][1])
+    else:
+        nvar = 1
+        c_list, o_list = [cno[0]], [cno[1]]
 
     if debug:
-        print("A coefficient: ", c)
+        print("A coefficient: ", c_list)
+    
+    rep_list = []
+    var_list = []
+    for n in range(nvar):
+        rep_list.append(Dummy())
+        
+        coeff, sym = c_list[n].as_coeff_Mul()
+        if isinstance(sym, Mul):
+            sym_ = simplify(sym)
+            if I in sym_.args:
+                var_list.append(sym_/I)
+            elif any([isinstance(arg, exp) for arg in sym_.args]):
+                nexps = Mul(*[arg for arg in sym_.args if not isinstance(arg, exp)])
+                exps = Mul(*[arg for arg in sym_.args if isinstance(arg, exp)])
 
-    if debug:
-        print("bch_expansion: ")
+                if I in simplify(exps).exp.args:
+                    var_list.append(nexps)
+                else:
+                    var_list.append(sym_)
+        else:
+            var_list.append(sym)
 
-    e_bch = _bch_expansion(A, B, N=N).doit(independent=independent)
+    A_rep = A.subs({var_list[n]: rep_list[n] for n in range(nvar)})
+
+    e_bch_rep = _bch_expansion(A_rep, B, N=N).doit(independent=independent)
 
     if debug:
         print("simplify: ")
 
-    e = qsimplify(normal_ordered_form(e_bch.expand(),
+    e = qsimplify(normal_ordered_form(e_bch_rep.expand(),
                                       recursive_limit=25,
                                       independent=independent).expand())
 
@@ -921,11 +960,27 @@ def bch_expansion(A, B, N=6, collect_operators=None, independent=False,
 
     if debug:
         print("search for series expansions: ", expansion_search)
+    
+    if debug:
+        print("e_collected:", e_collected)
 
-    if expansion_search and c:
-        return _expansion_search(e_collected, c, N)
-    else:
+    if expansion_search and c_list:
+        for n in range(nvar):
+            if (I*rep_list[n] in e_collected.find(I*rep_list[n])
+                or -I*rep_list[n] in e_collected.find(-I*rep_list[n])):
+                e_collected = _expansion_search(e_collected,
+                                                I*rep_list[n],
+                                                N).subs(rep_list[n],
+                                                        var_list[n])
+            else:
+                e_collected = _expansion_search(e_collected,
+                                                rep_list[n],
+                                                N).subs(rep_list[n],
+                                                        var_list[n])
         return e_collected
+    else:
+        return e_collected.subs({
+                    rep_list[n]: var_list[n] for n in range(nvar)})
 
 
 # -----------------------------------------------------------------------------
