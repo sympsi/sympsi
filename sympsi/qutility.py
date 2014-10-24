@@ -853,6 +853,8 @@ def _order(e):
     elif isinstance(e, Add):
         o = max([_order(arg) for arg in e.args])
         return o
+    elif e.is_Symbol:
+        return 1
     else:
         return 0
     
@@ -871,43 +873,53 @@ def _lowest_order_term(e):
         return e, _order(e)
 
 
-def _expansion_search(e, alpha, N, is_complex=False):
+def _expansion_search(e, rep_list, N):
     """
     Search for and substitute terms that match a series expansion of
     fundamental math functions.
+
+    e: expression
+
+    rep_list: list containing dummy variables
+
     """
+    if e.find(I):
+        is_complex = True
+    else:
+        is_complex = False
+
     if debug:
         print("_expansion_search: ", e)
 
     try:
-        flist = [[exp, 0],
-                 [lambda x: exp(-x), 0],
-                 [lambda x: (exp(x) - 1) / x, 1],  # ???
-                 [lambda x: (1 - exp(-x)) / x, 1],  # ???
-                 [cos, 0],
-                 [lambda x: sin(x) / x, 1],
-                 [cosh, 0],
-                 [lambda x: sinh(x) / x, 1],
-                 [lambda x: (1 - cos(x))/(x**2/2), 2]]
+        dummy = Dummy()
+
+        flist0 = [exp, lambda x: exp(-x), cos, cosh]
+
+        flist1 = [lambda x: (exp(x) - 1) / x,
+                  lambda x: (1 - exp(-x)) / x,
+                  lambda x: sin(x) / x,
+                  lambda x: sinh(x) / x]
+
+        flist2 = [lambda x: (1 - cos(x))/(x**2/2),
+                  lambda x: (cosh(x)-1)/(x**2/2)]
 
         if is_complex:
-            iflist = [[lambda x: exp(I*x), 0],
-                      [lambda x: exp(-I*x), 0],
-                      [lambda x: (exp(I*x) - 1) / (I*x), 1],
-                      [lambda x: (1 - exp(-I*x)) / (I*x), 1]]
+            iflist0 = [lambda x: exp(I*x),
+                       lambda x: exp(-I*x)]
+            iflist1 = [lambda x: (exp(I*x) - 1) / (I*x),
+                       lambda x: (1 - exp(-I*x)) / (I*x)]
 
-            flist = iflist + flist
-            
-        # TODO: should (cosh(x)-1)/(x**2/2) be included?
+            flist0 = iflist0 + flist0
+            flist1 = iflist1 + flist1
 
+        flist = [flist0, flist1, flist2]
         fseries = {}
 
         if isinstance(e, Mul):
             e_args = [e]
-
         elif isinstance(e, Add):
             e_args = e.args
-
         else:
             return e
 
@@ -915,26 +927,32 @@ def _expansion_search(e, alpha, N, is_complex=False):
         for e in e_args:
             if isinstance(e, Mul):
                 c, nc = e.args_cnc()
-
                 if nc and c:
                     c_expr = Mul(*c).expand()
-                    d, _ = _lowest_order_term(c_expr)
+                    d, d_order = _lowest_order_term(c_expr)
                     c_expr_normal = (c_expr / d).expand()
                     c_expr_subs = c_expr_normal
-                    for f, d_order in flist:
-                        if f not in fseries.keys():
-                            fseries[f] = f(alpha).series(alpha, n=N-d_order).removeO()
 
-                        c_expr_subs = c_expr_subs.subs(fseries[f], f(alpha))
+                    for alpha in rep_list:
+                        if alpha not in c_expr_subs.free_symbols:
+                            continue
+
+                        for f in flist[d_order]:
+                            if f not in fseries.keys():
+                                fseries[f] = f(dummy).series(
+                                    dummy, n=N-d_order).removeO()
+                            c_expr_subs = c_expr_subs.subs(
+                                fseries[f].subs(dummy, alpha), f(alpha))
+                            if c_expr_subs != c_expr_normal:
+                                break
                         if c_expr_subs != c_expr_normal:
                             break
-
                     newargs.append(d * c_expr_subs * Mul(*nc))
                 else:
                     newargs.append(e)
             else:
                 newargs.append(e)
-                
+
         return Add(*newargs)
 
     except Exception as e:
@@ -949,7 +967,7 @@ def bch_expansion(A, B, N=6, collect_operators=None, independent=False,
 
     if debug:
         print("bch_expansion: ", A, B)
-    
+
     cno = split_coeff_operator(A)
     if isinstance(cno, list):
         nvar = len(cno)
@@ -964,19 +982,21 @@ def bch_expansion(A, B, N=6, collect_operators=None, independent=False,
 
     if debug:
         print("A coefficient: ", c_list)
-    
+
     rep_list = []
     var_list = []
+
     for n in range(nvar):
         rep_list.append(Dummy())
-        
+
         coeff, sym = c_list[n].as_coeff_Mul()
         if isinstance(sym, Mul):
             sym_ = simplify(sym)
             if I in sym_.args:
                 var_list.append(sym_/I)
             elif any([isinstance(arg, exp) for arg in sym_.args]):
-                nexps = Mul(*[arg for arg in sym_.args if not isinstance(arg, exp)])
+                nexps = Mul(*[arg for arg in sym_.args
+                              if not isinstance(arg, exp)])
                 exps = Mul(*[arg for arg in sym_.args if isinstance(arg, exp)])
 
                 if I in simplify(exps).exp.args:
@@ -996,7 +1016,6 @@ def bch_expansion(A, B, N=6, collect_operators=None, independent=False,
     e = qsimplify(normal_ordered_form(e_bch_rep.expand(),
                                       recursive_limit=25,
                                       independent=independent).expand())
-
     if debug:
         print("extract operators: ")
 
@@ -1020,15 +1039,10 @@ def bch_expansion(A, B, N=6, collect_operators=None, independent=False,
         print("e_collected: ", e_collected)
 
     if expansion_search and c_list:
-        for n in range(nvar):
-            if e_collected.find(I * rep_list[n]) or e_collected.find(-I * rep_list[n]):
-                is_complex = True
-            else:
-                is_complex = False
+        e_collected = _expansion_search(e_collected, rep_list, N)
+        e_collected = e_collected.subs({rep_list[n]: var_list[n]
+                                        for n in range(nvar)})
 
-            e_collected = _expansion_search(e_collected, rep_list[n], N,
-                                            is_complex=is_complex)
-            e_collected = e_collected.subs(rep_list[n], var_list[n])
         return e_collected
     else:
         return e_collected.subs(
@@ -1089,7 +1103,7 @@ def hamiltonian_transformation(U, H, N=6, collect_operators=None,
     else:
         H_td = 0
 
-    #H_td = I * diff(U, t) * exp(- U.exp)  # hack: Dagger(U) = exp(-U.exp)
+    # H_td = I * diff(U, t) * exp(- U.exp)  # hack: Dagger(U) = exp(-U.exp)
     H_st = unitary_transformation(U, H, N=N,
                                   collect_operators=collect_operators,
                                   independent=independent,
